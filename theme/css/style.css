@@ -1,0 +1,89 @@
+body
+{
+	background: #FFF;
+}
+
+.heading
+{
+	text-align: center;
+}
+td
+{
+	vertical-align:top;
+}
+.variant
+{
+	font-weight:100;
+	font-style:italic;
+	margin-left:6px;
+}
+.commentary
+{
+    font-weight:100;
+    font-style:normal;
+}
+#stat
+{
+	font-weight:bold;
+	color:blue;
+	padding:5px;
+}
+.line
+{
+	width:800px;
+	text-align:left;
+}
+.pgnlive
+{
+display:inline-block;
+width:100px;
+text-decoration:none;
+border:1px solid black;
+text-align:center;
+font-weight:bold;
+color:black;
+}
+.pgnlive:hover
+{
+	background-color:white;
+}
+.dd
+{
+	position:relative;
+	float:left;
+	width:320px;
+	height:400px;
+	border:1px outset #efefef;
+	text-align:center;
+margin:2px;
+padding:2px;
+}
+.hided
+{
+	display:none;
+}
+.showed
+{
+	display:block;
+}
+#menu
+{
+	height:30px;
+}
+.menuitem
+{
+display:block;
+margin:3px;
+position:relative;
+float:left;
+width:120px;
+text-decoration:none;
+border:1px solid black;
+text-align:center;
+font-weight:bold;
+color:black;
+}
+.menuitem:hover
+{
+	background-color:white;
+}
