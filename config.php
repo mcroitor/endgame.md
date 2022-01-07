@@ -33,3 +33,4 @@ class config {
 }
 
 config::include_core();
+include './meta/_include_meta.php';

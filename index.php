@@ -8,7 +8,7 @@ include "config.php";
 
 // total endgames
 $db = new \core\database(config::dsn);
-$total_endgames = $db->select("endgame", ["COUNT(*) AS total"])[0]['total'];
+$total_endgames = $db->select(\meta\endgame::__name__, ["COUNT(*) AS total"])[0]['total'];
 
 //select themes
 //$themes = "<option value='-'>Any theme</option>\n<option value='unknown'>unknown</option>\n";
@@ -19,9 +19,12 @@ $total_endgames = $db->select("endgame", ["COUNT(*) AS total"])[0]['total'];
 
 // last changes
 $last_changes = "";
-$select_changes = $db->query_sql("SELECT * FROM changes ORDER BY date DESC LIMIT 5");
+$changes_table = \meta\changes::__name__;
+$select_changes = $db->query_sql("SELECT * FROM {$changes_table} ORDER BY date DESC LIMIT 5");
 foreach ($select_changes as $fetch) {
-    $last_changes .= "<li>{$fetch['date']}: {$fetch['nr_games']} endgames from {$fetch['filename']}</li>";
+    $changes = new \meta\changes($fetch);
+    $last_changes .= "<li>{$changes->date}: {$changes->nr_games} "
+    . "endgames from {$changes->filename}</li>";
 }
 
 

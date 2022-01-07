@@ -94,18 +94,19 @@ $rule = [
     " $19" => "-+",
     " $18" => "+-"
 ];
+
 foreach ($result as $fetch) {
-    $solution = stripslashes($fetch["solution"]);
+    $solution = stripslashes($fetch[\meta\endgame::SOLUTION]);
     $solution = (new \core\template($solution))->fill($rule)->value();
 
-    $html[] = array("#author#" => stripslashes($fetch["author"]),
+    $html[] = array("#author#" => stripslashes($fetch[\meta\endgame::AUTHOR]),
         "#solution#" => $solution,
-        "#fen#" => $fetch["fen"],
-        "#stip#" => $fetch["stipulation"],
-        "#source#" => stripslashes($fetch["source"]),
-        "#pieces#" => $fetch["whitep"] . " + " . $fetch["blackp"],
-        "#pid#" => $fetch["pid"],
-        "#date#" => $fetch["date"],
+        "#fen#" => $fetch[\meta\endgame::FEN],
+        "#stip#" => $fetch[\meta\endgame::STIPULATION],
+        "#source#" => stripslashes($fetch[\meta\endgame::SOURCE]),
+        "#pieces#" => $fetch[\meta\endgame::WHITEP] . " + " . $fetch[\meta\endgame::BLACKP],
+        "#pid#" => $fetch[\meta\endgame::PID],
+        "#date#" => $fetch[\meta\endgame::DATE],
     );
 }
 

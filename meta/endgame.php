@@ -7,19 +7,42 @@ class endgame {
 /** table name constant */
 	public const __name__ = 'endgame';
 
-/** table columns constants */
-	public const pid = 'pid';
-	public const fen = 'fen';
-	public const author = 'author';
-	public const date = 'date';
-	public const source = 'source';
-	public const award = 'award';
-	public const stipulation = 'stipulation';
-	public const solution = 'solution';
-	public const commentary = 'commentary';
-	public const whitep = 'whitep';
-	public const blackp = 'blackp';
-	public const piece_pattern = 'piece_pattern';
-	public const theme = 'theme';
-	public const cook = 'cook';
-};
+/** table columns fields */
+	public $pid;
+	public $fen;
+	public $author;
+	public $date;
+	public $source;
+	public $award;
+	public $stipulation;
+	public $solution;
+	public $commentary;
+	public $whitep;
+	public $blackp;
+	public $piece_pattern;
+	public $theme;
+	public $cook;
+
+/** table columns names */
+	public const PID = 'pid';
+	public const FEN = 'fen';
+	public const AUTHOR = 'author';
+	public const DATE = 'date';
+	public const SOURCE = 'source';
+	public const AWARD = 'award';
+	public const STIPULATION = 'stipulation';
+	public const SOLUTION = 'solution';
+	public const COMMENTARY = 'commentary';
+	public const WHITEP = 'whitep';
+	public const BLACKP = 'blackp';
+	public const PIECE_PATTERN = 'piece_pattern';
+	public const THEME = 'theme';
+	public const COOK = 'cook';
+
+/** constructor */
+	public function __construct(array|object $data) {
+		foreach($data as $key => $value) {
+			$this->$key = $value;
+		}
+	}
+}
