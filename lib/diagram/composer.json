@@ -1,0 +1,10 @@
+{
+	"name": "mcroitor/diagram",
+	"description": "The library for chess diagram generation.",
+	"version": "1.0.0",
+	"license": "Copyleft",
+	"require": { },
+    "autoload": {
+        "classmap": ["definitions.php", "diagram.class.php", "index.php"]
+    }
+}
