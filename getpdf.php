@@ -24,10 +24,10 @@ $rule = [
 
 $db = new \core\database(config::dsn);
 
-define("FPDF_PATH", "lib/fpdf/");
+define("FPDF_PATH", "modules/fpdf/");
 define('FPDF_FONTPATH', FPDF_PATH . 'font/');
 
-require('lib/makebook.php');
+require('modules/makebook.php');
 
 class MB extends MakeBook {
 

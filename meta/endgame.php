@@ -15,7 +15,6 @@ class endgame {
 	public $source;
 	public $award;
 	public $stipulation;
-	public $solution;
 	public $commentary;
 	public $whitep;
 	public $blackp;
@@ -31,7 +30,6 @@ class endgame {
 	public const SOURCE = 'source';
 	public const AWARD = 'award';
 	public const STIPULATION = 'stipulation';
-	public const SOLUTION = 'solution';
 	public const COMMENTARY = 'commentary';
 	public const WHITEP = 'whitep';
 	public const BLACKP = 'blackp';

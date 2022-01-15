@@ -1,7 +1,7 @@
 const DIAGRAM_TPL = "<div class='dd'><a href='#' onclick='pgnLive(#pid#)' class='button'>PGNLive!</a>" +
         "<a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>" +
         "<h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#" +
-        "<center><img src='./lib/diagram/?fen=#fen#&size=32' /></center>" +
+        "<center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>" +
         //"<center>" +fen2diag(p[i]["fen"]) + "</center>" +
         "#stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#" +
         "<input type='text' value='#fen#' style='width:300px;' /></div>";
