@@ -10,13 +10,6 @@ include "config.php";
 $db = new \core\database(config::dsn);
 $total_endgames = $db->select(\meta\endgame::__name__, ["COUNT(*) AS total"])[0]['total'];
 
-//select themes
-//$themes = "<option value='-'>Any theme</option>\n<option value='unknown'>unknown</option>\n";
-//$select_themes = $db->select("themes");
-//foreach ($select_themes as $theme) {
-//    $themes .= "<option value='{$theme['theme_name']}'>{$theme['theme_id']}</option>\n";
-//}
-
 // last changes
 $last_changes = "";
 $changes_table = \meta\changes::__name__;

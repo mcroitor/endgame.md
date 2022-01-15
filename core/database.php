@@ -149,7 +149,7 @@ class database {
      */
     public function insert(string $table, array $values): void {
         $columns = \implode(", ", array_keys($values));
-        $data = '"' . \implode('",  "', array_values($values)) . '"';
+        $data = "'" . \implode("',  '", array_values($values)) . "'";
         $query = "INSERT INTO {$table} ($columns) VALUES ({$data})";
         $this->query_sql($query, "Error: ", false);
     }

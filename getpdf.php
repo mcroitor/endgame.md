@@ -6,6 +6,22 @@ if (!file_exists("config.php")) {
 }
 include_once("config.php");
 
+$rule = [
+    "{" => "<div class='commentary'>{",
+    "}" => "}</div>",
+    ")" => ")</div>",
+    "(" => "<div class='variant'>(",
+    " $1 " => "! ",
+    " $2 " => "? ",
+    " $3 " => "!! ",
+    " $4 " => "?? ",
+    " $5 " => "!? ",
+    " $6 " => "?! ",
+    " $11" => "=",
+    " $19" => "-+",
+    " $18" => "+-"
+];
+
 $db = new \core\database(config::dsn);
 
 define("FPDF_PATH", "lib/fpdf/");
@@ -67,7 +83,7 @@ $result = $db->query_sql($query);
 $pdf = new MB();
 //set document properties
 $pdf->SetTopMargin(5);
-$pdf->Open();
+// $pdf->Open();
 $pdf->SetAuthor('Mihail Croitor');
 $pdf->AddFont("ArialPSMT", "", "arialcyr.php");
 $pdf->AddFont("ArialPSMT", "B", "arialcyrbd.php");
@@ -80,29 +96,15 @@ $pdf->SetDisplayMode('real', 'default');
 $pdf->SetColNr(2);
 
 foreach ($result as $key => $value) {
-//		$text = "<p><b>".$value["solution"]."</b></p>";
-    $text = $value["solution"];
-//		$text = str_replace("{", "</b> ", $text);
-//		$text = str_replace("}", " <b>", $text);
-//		$text = str_replace(")", "</i><br /><b>", $text);
-//		$text = str_replace("(", "</b><br /><i>", $text);
-    $text = str_replace(" $1 ", "! ", $text);
-    $text = str_replace(" $2 ", "? ", $text);
-    $text = str_replace(" $3 ", "!! ", $text);
-    $text = str_replace(" $4 ", "?? ", $text);
-    $text = str_replace(" $5 ", "!? ", $text);
-    $text = str_replace(" $6 ", "?! ", $text);
-    $text = str_replace(" $11", "=", $text);
-    $text = str_replace(" $19", "-+", $text);
-    $text = str_replace(" $18", "+-", $text);
-    $position = new ChessPosition($value["fen"], 20, "leipzig");
-    $position->author = $value["author"];
-    $position->stipulation = $value["stipulation"];
-    $position->source = $value["source"];
-    $dt = explode(".", $value["date"]);
-    $position->date = $dt[0];
-    $position->solution = $text;
+    $position = new ChessPosition($value[\meta\endgame::FEN], 20, "leipzig");
+    $position->author = $value[\meta\endgame::AUTHOR];
+    $position->stipulation = $value[\meta\endgame::STIPULATION];
+    $position->source = $value[\meta\endgame::SOURCE];
+    $position->date = explode(".", $value[\meta\endgame::DATE])[0];
+    $pgn = $db->select("raw", ["*"], ["id" => $value[\meta\endgame::PID]])[0]["data"];
+    $solution = preg_replace('/\[\w+ ".+"\]\s/', "", $pgn);
 
+    $position->solution = (new \core\template($solution))->fill($rule)->value();
     $pdf->DrawDiagram($position);
     $pdf->WriteHTML($position->solution);
 }

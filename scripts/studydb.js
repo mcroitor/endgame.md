@@ -88,11 +88,11 @@ async function getPosition(page)
             " positions found.  <a href='javascript:getPdf();'>get pdf</a> (no more then 1000 diagrams per PDFfile)</h5>";
     if (page !== 0) {
         get("stat").innerHTML += "<a href='#' onclick='getPosition(" + (page - 1) +
-                ")'><img src='img/left.gif' /></a> ";
+                ")'><img src='images/left.gif' /></a> ";
     }
     if (page * 12 + 12 < result["stat"]) {
         get("stat").innerHTML += " <a href='#' onclick='getPosition(" + (page + 1) +
-                ")'><img src='img/right.gif' /></a>";
+                ")'><img src='images/right.gif' /></a>";
     }
 }
 

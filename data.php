@@ -33,7 +33,6 @@ $data = file_get_contents("php://input");
 
 $request = json_decode($data);
 //\core\logger::stdout()->error(print_r($request, true));
-
 //if (empty($request->author)) {
 //    echo "{'error': 'no author'}";
 //    exit();
@@ -74,33 +73,37 @@ $__result = $db->query_sql($query);
 $stat = count($__result);
 
 $query .= " LIMIT $page, 12";
+
 // logging
-//    require_once("writelog.php");
-//    writeLog($query);
-//end logging
-$result = $db->query_sql($query);
-$rule = [
-    "{" => "<div class='commentary'>{",
-    "}" => "}</div>",
-    ")" => ")</div>",
-    "(" => "<div class='variant'>(",
-    " $1 " => "! ",
-    " $2 " => "? ",
-    " $3 " => "!! ",
-    " $4 " => "?? ",
-    " $5 " => "!? ",
-    " $6 " => "?! ",
-    " $11" => "=",
-    " $19" => "-+",
-    " $18" => "+-"
+$dblogger = new \core\dblogger($db, \meta\statistic::__name__);
+$log_data = [
+    \meta\statistic::QUERY => $query,
+    \meta\statistic::TIME => time(),
+    \meta\statistic::IP => $_SERVER['REMOTE_ADDR']
 ];
+$dblogger->write($log_data);
+//end logging
+
+$result = $db->query_sql($query);
+//$rule = [
+//    "{" => "<div class='commentary'>{",
+//    "}" => "}</div>",
+//    ")" => ")</div>",
+//    "(" => "<div class='variant'>(",
+//    " $1 " => "! ",
+//    " $2 " => "? ",
+//    " $3 " => "!! ",
+//    " $4 " => "?? ",
+//    " $5 " => "!? ",
+//    " $6 " => "?! ",
+//    " $11" => "=",
+//    " $19" => "-+",
+//    " $18" => "+-"
+//];
 
 foreach ($result as $fetch) {
-    $solution = stripslashes($fetch[\meta\endgame::SOLUTION]);
-    $solution = (new \core\template($solution))->fill($rule)->value();
 
     $html[] = array("#author#" => stripslashes($fetch[\meta\endgame::AUTHOR]),
-        "#solution#" => $solution,
         "#fen#" => $fetch[\meta\endgame::FEN],
         "#stip#" => $fetch[\meta\endgame::STIPULATION],
         "#source#" => stripslashes($fetch[\meta\endgame::SOURCE]),
