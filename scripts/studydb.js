@@ -1,10 +1,10 @@
 const DIAGRAM_TPL = "<div class='dd'><a href='#' onclick='pgnLive(#pid#)' class='button'>PGNLive!</a>" +
-        "<a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>" +
-        "<h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#" +
-        "<center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>" +
-        //"<center>" +fen2diag(p[i]["fen"]) + "</center>" +
-        "#stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#" +
-        "<input type='text' value='#fen#' style='width:300px;' /></div>";
+    "<a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>" +
+    "<h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#" +
+    "<center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>" +
+    //"<center>" +fen2diag(p[i]["fen"]) + "</center>" +
+    "#stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#" +
+    "<input type='text' value='#fen#' style='width:300px;' /></div>";
 
 /**
  * shortcut for getting HTML Element by ID
@@ -57,8 +57,7 @@ function fill(template, data) {
     return result;
 }
 
-async function getPosition(page)
-{
+async function getPosition(page) {
     get("advanced").className = "hided";
     showItem("diag");
     get("stat").innerHTML = "<h3>Loading... Please, wait!</h3>";
@@ -80,24 +79,22 @@ async function getPosition(page)
     var result = await request("data.php", sendData);
     p = result["html"];
     get("diag").innerHTML = "";
-    for (var i = 0; i < p.length; i++)
-    {
+    for (var i = 0; i < p.length; i++) {
         get("diag").innerHTML += fill(DIAGRAM_TPL, p[i]);
     }
     get("stat").innerHTML = "<h5>" + result["stat"] +
-            " positions found.  <a href='javascript:getPdf();'>get pdf</a> (no more then 1000 diagrams per PDFfile)</h5>";
+        " positions found.  <a href='javascript:getPdf();'>get pdf</a> (no more then 1000 diagrams per PDFfile)</h5>";
     if (page !== 0) {
         get("stat").innerHTML += "<a href='#' onclick='getPosition(" + (page - 1) +
-                ")'><img src='images/left.gif' /></a> ";
+            ")'><img src='images/left.gif' /></a> ";
     }
     if (page * 12 + 12 < result["stat"]) {
         get("stat").innerHTML += " <a href='#' onclick='getPosition(" + (page + 1) +
-                ")'><img src='images/right.gif' /></a>";
+            ")'><img src='images/right.gif' /></a>";
     }
 }
 
-function patternMake()
-{
+function patternMake() {
     var result = "";
     /*
      i=0;
@@ -164,18 +161,17 @@ function patternMake()
     return result;
 }
 
-function clearAll()
-{
-//    get("q0").value = '';
-//    get("r0").value = '';
-//    get("b0").value = '';
-//    get("n0").value = '';
-//    get("p0").value = '';
-//    get("q2").value = '';
-//    get("r2").value = '';
-//    get("b2").value = '';
-//    get("n2").value = '';
-//    get("p2").value = '';
+function clearAll() {
+    //    get("q0").value = '';
+    //    get("r0").value = '';
+    //    get("b0").value = '';
+    //    get("n0").value = '';
+    //    get("p0").value = '';
+    //    get("q2").value = '';
+    //    get("r2").value = '';
+    //    get("b2").value = '';
+    //    get("n2").value = '';
+    //    get("p2").value = '';
     get("debug").innerHTML = '';
     get("stat").innerHTML = '';
     get("diag").innerHTML = '';
@@ -186,26 +182,24 @@ function clearAll()
     get("toDate").value = '';
 }
 
-function pgnLive(pid)
-{
+function pgnLive(pid) {
     window.open('pgnlive/pgnlive.php?pid=' + pid, 'pgnlive', 'location=0,toolbar=0,scrollbar=auto');
     return false;
 }
-function getPgn(pid)
-{
+
+function getPgn(pid) {
     window.open('getpgn.php?pid=' + pid, 'getpgn', '');
     return false;
 }
-function showItem(item)
-{
+
+function showItem(item) {
     get("diag").className = "hided";
     get("about").className = "hided";
     get("linx").className = "hided";
     get(item).className = "showed";
 }
 
-function getPdf()
-{
+function getPdf() {
     author = get("author").value;
     wpiece = get("wpiece").value;
     wsign = get("wsign").value;
@@ -217,21 +211,22 @@ function getPdf()
     fromDate = get("fromDate").value;
     toDate = get("toDate").value;
     window.open('getpdf.php?author=' + author +
-            '&wpiece=' + wpiece +
-            '&wsign=' + wsign +
-            '&bpiece=' + bpiece +
-            '&bsign=' + bsign +
-            '&piece_pattern=' + piece_pattern +
-            '&stipulation=' + stipulation +
-            '&theme=' + theme +
-            '&fromDate=' + fromDate +
-            '&toDate=' + toDate,
-            'file.pdf', '');
+        '&wpiece=' + wpiece +
+        '&wsign=' + wsign +
+        '&bpiece=' + bpiece +
+        '&bsign=' + bsign +
+        '&piece_pattern=' + piece_pattern +
+        '&stipulation=' + stipulation +
+        '&theme=' + theme +
+        '&fromDate=' + fromDate +
+        '&toDate=' + toDate,
+        'file.pdf', '');
 }
 
 function showAdvanced() {
     get("advanced").className = "showed";
 }
+
 function hideAdvanced() {
     get("advanced").className = "hided";
 }

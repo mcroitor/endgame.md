@@ -8,6 +8,11 @@ namespace core;
  * @author Croitor Mihail <mcroitor@gmail.com>
  */
 class database {
+    public const ALL = ["*"];
+    public const NOLIMIT = [];
+    public const LIMIT1 = ['from' => '0', 'total' => '1'];
+    public const LIMIT10 = ['from' => '0', 'total' => '10'];
+    public const LIMIT100 = ['from' => '0', 'total' => '100'];
 
     //put your code here
     private $pdo;
@@ -86,7 +91,7 @@ class database {
      * @param array $limit definition sample: ['from' => '1', 'total' => '100'].
      * @return array
      */
-    public function select(string $table, array $data = ['*'], array $where = [], array $limit = []): array {
+    public function select(string $table, array $data = self::ALL, array $where = [], array $limit = self::NOLIMIT): array {
         $fields = \implode(", ", $data);
 
         $query = "SELECT {$fields} FROM {$table}";

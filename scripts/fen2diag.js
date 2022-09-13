@@ -1,3 +1,30 @@
+function isWhitePiece(char) {
+    switch(char){
+        case 'P':
+            case 'N':
+            case 'B':
+            case 'R':
+            case 'Q':
+            case 'K':
+                return true;
+    }
+    return false;
+}
+
+function isBlackPiece(char) {
+    switch (fen.charAt(i))
+    {
+        case 'p':
+        case 'n':
+        case 'b':
+        case 'r':
+        case 'q':
+        case 'k':
+            return true;
+    }
+    return false;
+}
+
 function pieceCount(fen)
 {
     var white = 0;
@@ -5,24 +32,11 @@ function pieceCount(fen)
     var len = fen.length;
     for (i = 0; i < len && fen.charAt(i); i++)
     {
-        switch (fen.charAt(i))
-        {
-            case 'P':
-            case 'N':
-            case 'B':
-            case 'R':
-            case 'Q':
-            case 'K':
-                white++;
-                break;
-            case 'p':
-            case 'n':
-            case 'b':
-            case 'r':
-            case 'q':
-            case 'k':
-                black++;
-                break;
+        if(isWhitePiece(fen.charAt(i))) {
+            ++white;
+        }
+        if(isBlackPiece(fen.charAt(i))) {
+            ++black;
         }
     }
     result = white + " + " + black;
@@ -53,27 +67,15 @@ function fen2diag(fen)
             control += parseInt(currChar);
         else
         {
-            switch (currChar) {
-                case 'K':
-                case 'Q':
-                case 'R':
-                case 'B':
-                case 'N':
-                case 'P':
-                case 'k':
-                case 'q':
-                case 'r':
-                case 'b':
-                case 'n':
-                case 'p':
-                    control++;
-                    break;
-                case '/':
-                    continue;
-                default:
-                    control += 100;
+            if(isWhitePiece(currChar) || isBlackPiece(currChar)){
+                ++ control;
             }
-
+            else if(currChar == '/'){
+                continue;
+            }
+            else {
+                control += 100;
+            }
         }
     }
     if (control !== 64)
@@ -118,23 +120,11 @@ function fen2diag(fen)
                 c = 0;
             }
             result += '<IMG SRC="img/';
-            switch (currChar) {
-                case 'K':
-                case 'Q':
-                case 'R':
-                case 'B':
-                case 'N':
-                case 'P':
-                    result += currChar + c;
-                    break;
-                case 'k':
-                case 'q':
-                case 'r':
-                case 'b':
-                case 'n':
-                case 'p':
-                    result += currChar.toUpperCase() + (c + 2);
-                    break;
+            if(isWhitePiece(currChar)){
+                result += currChar + c;
+            }
+            if(isBlackPiece(currChar)){
+                result += currChar.toUpperCase() + (c + 2);
             }
             result += '.GIF" width="25" />';
         }

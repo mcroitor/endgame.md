@@ -14,18 +14,4 @@ header('Content-type: text/plain');
 header("Content-Disposition: attachment; filename=endgame_{$pid}.pgn");
 $game = str_replace(["rn", "\\r\\n"], " ", $game);
     
-//$source = stripslashes($fetch["source"]);
-//$author = stripslashes($fetch["author"]);
-//$solution = stripslashes($fetch["solution"]);
-//$game = "[Event '{$source}']
-//[Site '?']
-//[Date '{$fetch["date"]}']
-//[Round '?']
-//[White '{$author}']
-//[Black '{$fetch["stipulation"]}']
-//[Result '*']
-//[FEN '{$fetch["fen"]}']
-//
-//{$solution}\r\n";
-
 echo $game;

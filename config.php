@@ -7,12 +7,13 @@ class config {
 
     public const root_dir = __DIR__ . DIRECTORY_SEPARATOR;
     public const core_dir = self::root_dir . "core" . DIRECTORY_SEPARATOR;
-    public const dbname = "endgame.20220114.db";
+    public const dbname = "endgame.20220115.db";
     public const dsn = "sqlite:" . self::root_dir . "database/" . self::dbname;
     private const core = [
         "clitext",
         "database",
         "dblogger",
+        "lib",
         "logger",
         "template",
     ];

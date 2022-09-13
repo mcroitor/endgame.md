@@ -20,7 +20,7 @@
                 <a href="#" onclick="showItem('linx');" class="navbar-link">Links</a>
                 <a href="../builder/" class="navbar-link">FENBuilder</a>
             </div>
-            <p>There are <strong><!-- total_endgames --></strong> endgames in dive database.</p>
+            <p>There are <strong><!-- total_endgames --></strong> endgames in the database.</p>
             <div class="searchform">
                 <h5>Search by:</h5>
     <!--div><div>endgame ID:</div><div><input type="text" name="pid" id="pid" /></div></div-->
@@ -103,7 +103,7 @@
                         <li><a href="http://ruszchessstudies.blogspot.com/2008/02/download-pgn-files.html" target="_blank">http://ruszchessstudies.blogspot.com/</a></li>
                     </ul>
                     <p>Many thanks to Lebedev Vasily who sent me some commented endgames, to Milan Velimirovic who maked nice web service 'PGN Live'.</p>
-                    <p>Many thanks to composers, who sends me diveir endgames: Serghey Didukh, Siegfried Hornecker, Rainer Staudte, Daniel Keidiv, Ilham Aliev, Guenter Amann.</p></fieldset>
+                    <p>Many thanks to composers, who sends me their endgames: Serghey Didukh, Siegfried Hornecker, Rainer Staudte, Daniel Keidiv, Ilham Aliev, Guenter Amann.</p></fieldset>
             </div>
             <div class="hided" id="linx">
                 <p>Some useful links:</p>
