@@ -7,7 +7,7 @@ if (!file_exists("config.php")) {
 include "config.php";
 
 // total endgames
-$db = new \core\database(config::dsn);
+$db = new \mc\sql\database(config::dsn);
 $total_endgames = $db->select(\meta\endgame::__name__, ["COUNT(*) AS total"])[0]['total'];
 
 // last changes
@@ -28,6 +28,6 @@ $fill = [
     "<!-- last_changes -->" => $last_changes
 ];
 
-\core\logger::stdout()->info(json_encode($fill));
+\mc\logger::stdout()->info(json_encode($fill));
 
 echo (new \core\template($template))->fill($fill)->value();

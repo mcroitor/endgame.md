@@ -1,0 +1,21 @@
+[
+    {
+        "user" : "mcroitor",
+        "repository" : "database",
+        "destination" : "./../core/database",
+        "source" : "src"
+    },
+    {
+        "user": "mcroitor",
+        "repository": "logger",
+        "source": "src",
+        "destination" : "./../core/logger"
+    },
+    {
+        "user": "jhlywa",
+        "repository": "chess.js",
+        "branch": "master",
+        "source": "chess.js",
+        "destination" : "./../scripts"
+    }
+]

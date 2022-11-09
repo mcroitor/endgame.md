@@ -11,10 +11,10 @@ class config {
     public const dsn = "sqlite:" . self::root_dir . "database/" . self::dbname;
     private const core = [
         "clitext",
-        "database",
+        "database/mc/database",
         "dblogger",
         "lib",
-        "logger",
+        "logger/mc/logger",
         "template",
     ];
     private const core_html = [

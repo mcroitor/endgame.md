@@ -7,7 +7,7 @@ if (!file_exists("config.php")) {
 include("config.php");
 
 $pid = filter_input(INPUT_GET, "pid");
-$db = new \core\database(config::dsn);
+$db = new \mc\sql\database(config::dsn);
 $game = $db->select("raw", ["*"], ["id" => $pid])[0]["data"];
 
 header('Content-type: text/plain');
