@@ -12,10 +12,10 @@
         "destination" : "./../core/logger"
     },
     {
-        "user": "jhlywa",
-        "repository": "chess.js",
+        "user": "mcroitor",
+        "repository": "router",
+        "source": "src",
         "branch": "master",
-        "source": "chess.js",
-        "destination" : "./../scripts"
+        "destination" : "./../core/router"
     }
 ]
