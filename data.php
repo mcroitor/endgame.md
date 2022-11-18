@@ -6,7 +6,7 @@ if (!file_exists("config.php")) {
 
 include "config.php";
 
-$db = new \core\database(config::dsn);
+$db = new \mc\sql\database(config::dsn);
 
 $html = [];
 

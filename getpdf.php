@@ -22,7 +22,7 @@ $rule = [
     " $18" => "+-"
 ];
 
-$db = new \core\database(config::dsn);
+$db = new \mc\sql\database(config::dsn);
 
 define("FPDF_PATH", "modules/fpdf/");
 define('FPDF_FONTPATH', FPDF_PATH . 'font/');

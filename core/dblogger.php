@@ -7,7 +7,7 @@ class dblogger {
     private $db;
     private $statistic_tbl;
 
-    public function __construct(\core\database $db, string $statistic_tbl) {
+    public function __construct(\mc\sql\database $db, string $statistic_tbl) {
         $this->db = $db;
         $this->statistic_tbl = $statistic_tbl;
 
