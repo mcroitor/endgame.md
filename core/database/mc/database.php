@@ -15,6 +15,20 @@ class database {
         'limit' => 1,
         'offset' => 0
     ];
+    public const LIMIT10 = [
+        'limit' => 10,
+        'offset' => 0
+    ];
+    public const LIMIT20 = [
+        'limit' => 20,
+        'offset' => 0
+    ];
+    public const LIMIT100 = [
+        'limit' => 100,
+        'offset' => 0
+    ];
+
+    public const ALL = ["*"];
 
     private $pdo;
 

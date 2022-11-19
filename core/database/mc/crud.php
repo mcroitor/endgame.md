@@ -78,7 +78,7 @@ class crud {
      * @param int|string $id
      */
     public function delete($id) {
-        $this->db->delete($this->table(), [$this->key() => $id]);
+        $this->_db->delete($this->table(), [$this->key() => $id]);
     }
 
     /**
@@ -93,9 +93,19 @@ class crud {
     /**
      * return the key name, userd for all CRUD operations
      * 
-     * return string
+     * @return string
      */
     public function key() {
         return $this->_key;
     } 
+
+    /**
+     * return number of lines in the associated table
+     * 
+     * @return int
+     */
+    public function count() {
+        $result = $this->_db->select($this->table(), ["count(*) as count"]);
+        return $result[0]["count"];
+    }
 }

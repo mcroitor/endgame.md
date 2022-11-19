@@ -7,14 +7,16 @@ class config {
 
     public const root_dir = __DIR__ . DIRECTORY_SEPARATOR;
     public const core_dir = self::root_dir . "core" . DIRECTORY_SEPARATOR;
-    public const dbname = "endgame.20220115.db";
+    public const dbname = "endgame.20220115.sqlite";
     public const dsn = "sqlite:" . self::root_dir . "database/" . self::dbname;
     private const core = [
         "clitext",
         "database/mc/database",
+        "database/mc/crud",
         "dblogger",
         "lib",
         "logger/mc/logger",
+        "router/mc/router",
         "template",
     ];
     private const core_html = [

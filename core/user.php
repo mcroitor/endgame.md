@@ -21,7 +21,7 @@ class user {
     }
     
     public static function login() {
-        $db = new \core\database(\config::dsn);
+        $db = new \mc\sql\database(\config::dsn);
         self::$name = $db->select("user", ["name"]);
     }
     

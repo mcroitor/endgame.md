@@ -1,10 +1,14 @@
-const DIAGRAM_TPL = "<div class='dd'><a href='#' onclick='pgnLive(#pid#)' class='button'>PGNLive!</a>" +
-    "<a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>" +
-    "<h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#" +
-    "<center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>" +
-    //"<center>" +fen2diag(p[i]["fen"]) + "</center>" +
-    "#stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#" +
-    "<input type='text' value='#fen#' style='width:300px;' /></div>";
+const DIAGRAM_TPL = `<div class='dd'><a href='#' onclick='pgnLive(#pid#)' class='button'>PGNLive!</a>
+<a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>
+<h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#
+<center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>
+#stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#
+<input type='text' value='#fen#' style='width:300px;' /></div>`;
+
+const VIEWER_TPL = `<div class="titlebar">
+<a href="javascript:close()" class="close-icon">X</a>
+</div>
+<div id='pgnlive'></div>`;
 
 /**
  * shortcut for getting HTML Element by ID
@@ -23,12 +27,12 @@ function get(id) {
  */
 function request(uri, sendData) {
     return new Promise(function (resolve, reject) {
-        var http = new XMLHttpRequest();
+        let http = new XMLHttpRequest();
         http.onload = function () {
             if (http.status === 200) {
                 resolve(JSON.parse(http.responseText));
             } else {
-                var error = new Error(this.statusText);
+                let error = new Error(this.statusText);
                 error.code = this.status;
                 reject(error);
             }
@@ -50,18 +54,18 @@ function request(uri, sendData) {
  * @returns {fill.result|String}
  */
 function fill(template, data) {
-    var result = template;
-    for (var item in data) {
+    let result = template;
+    for (let item in data) {
         result = result.replaceAll(item, data[item]);
     }
     return result;
 }
 
 async function getPosition(page) {
-    get("advanced").className = "hided";
+    get("advanced").className = "hidden";
     showItem("diag");
     get("stat").innerHTML = "<h3>Loading... Please, wait!</h3>";
-    var sendData = {
+    let sendData = {
         "page": page,
         "author": get("author").value,
         "wpiece": get("wpiece").value,
@@ -76,12 +80,13 @@ async function getPosition(page) {
         "cook": get("cook").checked
     };
 
-    var result = await request("data.php", sendData);
-    p = result["html"];
+    const result = await request("data.php", sendData);
+    const p = result["html"];
     get("diag").innerHTML = "";
-    for (var i = 0; i < p.length; i++) {
-        get("diag").innerHTML += fill(DIAGRAM_TPL, p[i]);
+    for (const desc of p) {
+        get("diag").innerHTML += fill(DIAGRAM_TPL, desc);
     }
+
     get("stat").innerHTML = "<h5>" + result["stat"] +
         " positions found.  <a href='javascript:getPdf();'>get pdf</a> (no more then 1000 diagrams per PDFfile)</h5>";
     if (page !== 0) {
@@ -95,7 +100,7 @@ async function getPosition(page) {
 }
 
 function patternMake() {
-    var result = "";
+    let result = "";
     /*
      i=0;
      while(i<get("q0").value)
@@ -182,8 +187,23 @@ function clearAll() {
     get("toDate").value = '';
 }
 
-function pgnLive(pid) {
-    window.open('pgnlive/pgnlive.php?pid=' + pid, 'pgnlive', 'location=0,toolbar=0,scrollbar=auto');
+async function pgnLive(pid) {
+    /* window.open('pgnlive/pgnlive.php?pid=' + pid, 'pgnlive', 'location=0,toolbar=0,scrollbar=auto'); */
+    let pgn = await request('api/?q=pgn/' + pid);
+    console.log(pgn);
+    let config = {
+        "pgn": pgn.data,
+        "showMoves": "right",
+        "showPlayers": "none",
+        "menu": {
+          "getPgn": { "enabled": true, "fileName": 'blah.pgn' },
+        }
+    };
+    
+    if(get("pgnlive")){
+        LichessPgnViewer(get("pgnlive"), config);
+    }
+    get("pgnlive-wrapper").className = "showed";
     return false;
 }
 
@@ -193,23 +213,23 @@ function getPgn(pid) {
 }
 
 function showItem(item) {
-    get("diag").className = "hided";
-    get("about").className = "hided";
-    get("linx").className = "hided";
+    get("diag").className = "hidden";
+    get("about").className = "hidden";
+    get("linx").className = "hidden";
     get(item).className = "showed";
 }
 
 function getPdf() {
-    author = get("author").value;
-    wpiece = get("wpiece").value;
-    wsign = get("wsign").value;
-    bpiece = get("bpiece").value;
-    bsign = get("bsign").value;
-    piece_pattern = patternMake();
-    stipulation = get("stipulation").value;
-    theme = get("theme").value;
-    fromDate = get("fromDate").value;
-    toDate = get("toDate").value;
+    const author = get("author").value;
+    const wpiece = get("wpiece").value;
+    const wsign = get("wsign").value;
+    const bpiece = get("bpiece").value;
+    const bsign = get("bsign").value;
+    const piece_pattern = patternMake();
+    const stipulation = get("stipulation").value;
+    const theme = get("theme").value;
+    const fromDate = get("fromDate").value;
+    const toDate = get("toDate").value;
     window.open('getpdf.php?author=' + author +
         '&wpiece=' + wpiece +
         '&wsign=' + wsign +
@@ -228,5 +248,10 @@ function showAdvanced() {
 }
 
 function hideAdvanced() {
-    get("advanced").className = "hided";
+    get("advanced").className = "hidden";
+}
+
+function close() {
+    get("pgnlive-wrapper").className = "hidden";
+    get("pgnlive-wrapper").innerHTML = VIEWER_TPL;
 }
