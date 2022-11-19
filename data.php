@@ -4,7 +4,7 @@ if (!file_exists("config.php")) {
     exit();
 }
 
-include "config.php";
+include_once (__DIR__ . "/config.php");
 
 $db = new \mc\sql\database(config::dsn);
 

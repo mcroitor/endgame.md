@@ -110,9 +110,9 @@ class Board {
      *
      * @var string[][]
      */
-    var $board;
+    public $board;
 
-    function __construct($fen) {
+    public function __construct($fen) {
         $this->board = $this->fen2board($fen);
     }
 
@@ -121,7 +121,7 @@ class Board {
      * @param string $fen
      * @return string[][]
      */
-    function fen2board($fen) {
+    public function fen2board($fen) {
         $parts = explode(" ", $fen);
         $epd = $parts[0];
 
@@ -188,7 +188,7 @@ class Board {
      * 
      * @return string
      */
-    function toString() {
+    public function toString() {
         $str = "";
         for ($i = 0; $i != 8; ++$i) {
             $str .= implode($this->board[$i]) . "\n";
@@ -200,7 +200,7 @@ class Board {
      * lines of board
      * @return string[]
      */
-    function lines() {
+    public function lines() {
         $l = [];
         for ($i = 0; $i != 8; ++$i) {
             $l[$i] = implode($this->board[$i]);
@@ -213,7 +213,7 @@ class Board {
      * @param string[][] $simbols
      * @return string
      */
-    function ascii($simbols) {
+    public function ascii($simbols) {
         $result = "";
         for ($i = 0; $i !== 8; ++$i) {
             $board_line = [];
@@ -281,7 +281,7 @@ class Diagram {
     var $simbols;
     var $m, $b, $s;
 
-    function __construct($fen, $options = []) {
+    public function __construct($fen, $options = []) {
         $this->board = new Board($fen);
         $this->style = empty($options["style"]) ? "alpha" : $options["style"];
         $this->size = empty($options["size"]) ? 30 : $options["size"];
@@ -297,10 +297,10 @@ class Diagram {
 
 
         global $simbols;
-        if (!file_exists("./font-desc/{$this->style}.php")) {
+        if (!file_exists(__DIR__ . "/font-desc/{$this->style}.php")) {
             $this->style = "alpha";
         }
-        include_once("./font-desc/{$this->style}.php");
+        include_once(__DIR__ ."/font-desc/{$this->style}.php");
         $this->simbols = $simbols[$this->style];
     }
 
@@ -315,9 +315,9 @@ class Diagram {
     /**
      * returns true color image
      * @global array $colors
-     * @return resource
+     * @return GdImage
      */
-    function toImage() {
+    public function toImage() {
         global $colors;
 
         $d = imagecreatetruecolor($this->s + 1, $this->s + 1); // +1 fix

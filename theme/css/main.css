@@ -1,54 +1,107 @@
 .container {
-    max-width: 1000px; }
+    max-width: 1000px;
+}
+
 .header {
     margin-top: 4rem;
     font-size: 36px;
     text-transform: uppercase;
-    text-align: left; }
+    text-align: left;
+}
+
 .footer {
     border-top: 1px solid #eee;
     margin-top: 6rem;
     padding-top: 2rem;
     font-size: 14px;
-    text-align: center; }
+    text-align: center;
+}
+
 .navbar {
-    display: none; }
-.searchform{} 
-.searchform-element{
-  padding: 1px 15px;
-  text-align: left;
-  border-bottom: 0px solid #FFF; }
-.hided
-{
-	display:none;
+    display: none;
 }
-.showed
-{
-	display:block;
+
+.searchform {
+    text-decoration: none;
 }
-.dd
-{
-	position:relative;
-	float:left;
-	width:320px;
-	height:500px;
-/*	border:1px outset #eee; */
-	text-align:center;
-margin:2px;
-padding:2px;
+
+.searchform-element {
+    padding: 1px 15px;
+    text-align: left;
+    border-bottom: 0px solid #FFF;
+}
+
+.hidden {
+    display: none;
+}
+
+.showed {
+    display: block;
+}
+
+.dd {
+    position: relative;
+    float: left;
+    width: 320px;
+    height: 500px;
+    /*	border:1px outset #eee; */
+    text-align: center;
+    margin: 2px;
+    padding: 2px;
+}
+
+#pgnlive-wrapper {
+    width: 80%;
+    z-index: 15;
+    position: fixed;
+    left: 50%;
+    top: 50px;
+    margin-left: -40%;
+    background: white;
+    min-width: 200px;
+    max-width: 1000px;
+    box-shadow: 0px 0px 3px 6px gray;
+    padding: 2px;
+}
+
+#pgnlive-wrapper>.titlebar {
+    height: 20px;
+    width: 100%;
+}
+
+#pgnlive-wrapper>.titlebar>.close-icon {
+    float: right;
+    background-color: #A00000;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bolder;
+    font-size: 12px;
+    padding: 1px;
+    margin: 1px;
+    width: 16px;
+    height: 16px;
+}
+
+#pgnlive {
+    text-decoration: none;
 }
 
 /* Larger than phone */
 @media (min-width: 550px) {
     .header {
-        margin-top: 4rem; }
+        margin-top: 4rem;
+    }
 }
 
 /* Larger than tablet */
 @media (min-width: 750px) {
+
     /* Navbar */
-    .navbar + .docs-section {
-        border-top-width: 0; }
+    .navbar+.docs-section {
+        border-top-width: 0;
+    }
+
     .navbar,
     .navbar-spacer {
         display: block;
@@ -57,18 +110,28 @@ padding:2px;
         background: #fff;
         z-index: 99;
         border-top: 1px solid #eee;
-        border-bottom: 1px solid #eee; }
+        border-bottom: 1px solid #eee;
+    }
+
     .navbar-spacer {
-        display: none; }
-    .navbar > .container {
-        width: 100%; }
+        display: none;
+    }
+
+    .navbar>.container {
+        width: 100%;
+    }
+
     .navbar-list {
         list-style: none;
-        margin-bottom: 0; }
+        margin-bottom: 0;
+    }
+
     .navbar-item {
         position: relative;
         float: left;
-        margin-bottom: 0; }
+        margin-bottom: 0;
+    }
+
     .navbar-link {
         text-transform: uppercase;
         font-size: 11px;
@@ -77,16 +140,25 @@ padding:2px;
         margin-right: 35px;
         text-decoration: none;
         line-height: 4rem;
-        color: #222; }
+        color: #222;
+    }
+
     .navbar-link.active {
-        color: #33C3F0; }
+        color: #33C3F0;
+    }
+
     .has-docked-nav .navbar {
         position: fixed;
         top: 0;
-        left: 0; }
+        left: 0;
+    }
+
     .has-docked-nav .navbar-spacer {
-        display: block; }
+        display: block;
+    }
+
     /* Re-overiding the width 100% declaration to match size of % based container */
-    .has-docked-nav .navbar > .container {
-        width: 80%; }
+    .has-docked-nav .navbar>.container {
+        width: 80%;
+    }
 }
