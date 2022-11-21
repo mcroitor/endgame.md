@@ -21,6 +21,16 @@
     display: none;
 }
 
+#login-form {
+    position: relative;
+    float: right;
+    margin: 2px;
+}
+
+#login-form input {
+    width: 120px;
+}
+
 .searchform {
     text-decoration: none;
 }

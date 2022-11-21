@@ -1,12 +1,14 @@
 <?php
 
-// $db->query_sql('SET NAMES utf8');
 date_default_timezone_set("Europe/Chisinau");
 
 class config {
 
     public const root_dir = __DIR__ . DIRECTORY_SEPARATOR;
+    public const www = "http://localhost:8000";
     public const core_dir = self::root_dir . "core" . DIRECTORY_SEPARATOR;
+    public const theme_dir = self::root_dir . "theme" . DIRECTORY_SEPARATOR;
+    public const template_dir = self::theme_dir . "templates" . DIRECTORY_SEPARATOR;
     public const dbname = "endgame.20220115.sqlite";
     public const dsn = "sqlite:" . self::root_dir . "database/" . self::dbname;
     private const core = [
@@ -18,8 +20,7 @@ class config {
         "logger/mc/logger",
         "router/mc/router",
         "template",
-    ];
-    private const core_html = [
+        "user",
     ];
 
     public static function include_core() {
@@ -28,13 +29,9 @@ class config {
         }
     }
 
-    public static function include_core_html() {
-        foreach (self::core_html as $class_name) {
-            include_once self::core_dir . "html" . DIRECTORY_SEPARATOR . "{$class_name}.php";
-        }
-    }
-
 }
 
 config::include_core();
-include config::root_dir . '/meta/_include_meta.php';
+\mc\user::init();
+
+include_once config::root_dir . '/meta/_include_meta.php';

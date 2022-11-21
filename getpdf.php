@@ -27,7 +27,7 @@ $db = new \mc\sql\database(config::dsn);
 define("FPDF_PATH", "modules/fpdf/");
 define('FPDF_FONTPATH', FPDF_PATH . 'font/');
 
-require('modules/makebook.php');
+require_once __DIR__ . '/modules/makebook.php';
 
 class MB extends MakeBook {
 
@@ -83,7 +83,7 @@ $result = $db->query_sql($query);
 $pdf = new MB();
 //set document properties
 $pdf->SetTopMargin(5);
-// $pdf->Open();
+
 $pdf->SetAuthor('Mihail Croitor');
 $pdf->AddFont("ArialPSMT", "", "arialcyr.php");
 $pdf->AddFont("ArialPSMT", "B", "arialcyrbd.php");
@@ -114,5 +114,3 @@ $pdf->SetLeftMargin(10);
 $pdf->Close();
 //Output the document
 $pdf->Output('example1.pdf', 'I');
-//	header("Location:example1.pdf");
-

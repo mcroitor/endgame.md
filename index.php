@@ -4,7 +4,7 @@ if (!file_exists("config.php")) {
     echo "<h2>site is not installed!</h2>";
     exit();
 }
-include "config.php";
+include_once __DIR__ . "/config.php";
 
 // total endgames
 $db = new \mc\sql\database(config::dsn);
@@ -25,9 +25,8 @@ $template = file_get_contents(__DIR__ . "/theme/templates/index.template.php");
 
 $fill = [
     "<!-- total_endgames -->" => $total_endgames,
-    "<!-- last_changes -->" => $last_changes
+    "<!-- last_changes -->" => $last_changes,
+    "<!-- login-form -->" => \mc\user::login_form()
 ];
-
-\mc\logger::stdout()->info(json_encode($fill));
 
 echo (new \core\template($template))->fill($fill)->value();
