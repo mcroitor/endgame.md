@@ -14,7 +14,7 @@ class crud {
 
     /**
      * crud constructor, must be passed a database object and a table name
-     * the key is the primary key of the table, defaults to 'id' 
+     * the key is the primary key of the table, defaults to 'id'
      * @param database $db
      * @param string $table
      * @param string $key
