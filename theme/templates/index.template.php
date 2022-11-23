@@ -36,7 +36,7 @@
                     <input type="text" name="author" id="author" onfocus="showAdvanced();" />
                 </div>
             </div>
-            <div class="hided" id="advanced">
+            <div class="hidden" id="advanced">
                 <div class="row">
                     <div class="two columns">White pieces: </div>
                     <div class="four columns">

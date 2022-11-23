@@ -81,8 +81,10 @@ class user
         $db = new \mc\sql\database(\config::dsn);
         $login = filter_input(INPUT_POST, "login");
         $password = filter_input(INPUT_POST, "password");
-        \mc\logger::stdout()->info(json_encode(["login" => $login, "password" => $password]));
-        $user = $db->select("user", ["name", "role_id"], ["login" => $login, "password" => $password]);
+        $user = $db->select("user", ["name", "role_id"], [
+            "login" => $login,
+            "password" => user::crypt($login, $password)
+        ]);
         if (count($user) !== 1) {
             header("location:" . config::www);
             return;
@@ -101,7 +103,7 @@ class user
     private static function load_capabilities(array $cap_ids) {
         $db = new \mc\sql\database(\config::dsn);
         $result = [];
-        foreach($cap_ids as $capability_id){
+        foreach ($cap_ids as $capability_id){
             $result[] = $db->select_column("capabilities", "name", ["id" => $capability_id])[0];
         }
         return $result;
@@ -119,5 +121,15 @@ class user
             return file_get_contents(config::template_dir . "loginform.template.php");
         }
         return user::LOGOUT_FORM;
+    }
+
+    private static function crypt(string $login, string $password) {
+        return crypt($password . $login, $login);
+    }
+
+    public static function register(array $data) {
+        $db = new \mc\sql\database(config::dsn);
+        $data["password"] = user::crypt($data["login"], $data["password"]);
+        return $db->insert("user", $data);
     }
 }
