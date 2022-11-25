@@ -175,7 +175,7 @@ class clitext {
         } elseif (constant($bgcolor)) {
             $bgcolor = $bgcolor;
         } else {
-            throw new Exception("undefined background color");
+            throw new \Exception("undefined background color");
         }
         return new clitext($this->text, $this->color, $bgcolor);
     }
@@ -184,7 +184,7 @@ class clitext {
      * 
      * @return string
      */
-    public function to_string(): string {
+    public function __toString(): string {
         return $this->color . $this->bgcolor .
                 $this->text .
                 self::BG_BLACK . self::TXT_WHITE;

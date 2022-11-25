@@ -21,20 +21,22 @@
             <a href="#" onclick="showItem('about');" class="navbar-link">About</a>
             <a href="#" onclick="showItem('linx');" class="navbar-link">Links</a>
             <a href="../builder/" class="navbar-link">FENBuilder</a>
+            <!-- login-form -->
         </div>
-        <p>There are <strong>
-                <!-- total_endgames -->
-            </strong> endgames in the database.</p>
+        <p>There are <strong><!-- total_endgames --></strong> endgames in the database.</p>
         <div class="searchform">
             <h5>Search by:</h5>
-            <!--div><div>endgame ID:</div><div><input type="text" name="pid" id="pid" /></div></div-->
+            <!-- <div>
+                <div>endgame ID:</div>
+                <div><input type="text" name="pid" id="pid" /></div>
+            </div> -->
             <div class="row">
                 <div class="two columns">author: </div>
                 <div class="ten columns">
                     <input type="text" name="author" id="author" onfocus="showAdvanced();" />
                 </div>
             </div>
-            <div class="hided" id="advanced">
+            <div class="hidden" id="advanced">
                 <div class="row">
                     <div class="two columns">White pieces: </div>
                     <div class="four columns">
@@ -99,7 +101,7 @@
                 </ul>
             </fieldset>
             <fieldset class="line">
-                <legend><i>03.08.2020:</i> Migration!</legend>
+                <legend><em>03.08.2020:</em> Migration!</legend>
                 I think is a good step to have personal, independed page. Welcome
                 to <em>https://endgame.md</em>!
             </fieldset>
@@ -124,7 +126,7 @@
                     Guenter Amann.</p>
             </fieldset>
         </div>
-        <div class="hided" id="linx">
+        <div class="hidden" id="linx">
             <p>Some useful links:</p>
             <ul>
                 <li><a href="https://kasparovchess.crestbook.com/" target="_blank">https://kasparovchess.crestbook.com/</a> - Russian Chess Forum</li>
