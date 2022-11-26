@@ -34,21 +34,33 @@ class template {
 
     /**
      * template
-     * @var string 
+     * @var string
      */
-    var $template;
+    protected string $template;
+    protected array $modifiers = [
+        "prefix" => "",
+        "suffix" => ""
+    ];
 
     /**
-     * 
+     *
      * @param string $template
      */
     public function __construct(string $template) {
         $this->template = $template;
     }
 
+    public function set_prefix(string $prefix) {
+        $this->modifiers["prefix"] = $prefix;
+    }
+    
+    public function set_suffix(string $suffix) {
+        $this->modifiers["suffix"] = $suffix;
+    }
+
     /**
      * $data is a simple list of pairs <i>$pattern</i> => <i>$value</i>
-     * Method replace <i>$pattern</i> with <i>$value</i> 
+     * Method replace <i>$pattern</i> with <i>$value</i>
      * and return new template object
      * Example:
      * <pre>$template->fill($data1)->fill(data2)->value();</pre>
@@ -58,6 +70,7 @@ class template {
     public function fill(array $data): template {
         $html = $this->template;
         foreach ($data as $pattern => $value) {
+            $pattern = $this->modifiers["prefix"] . $pattern . $this->modifiers["suffix"];
             $html = str_replace($pattern, $value, $html);
         }
         return new template($html);
@@ -70,7 +83,7 @@ class template {
      * @return \template
      */
     public function fill_value(string $pattern, string $value): template {
-        return  new template(str_replace($pattern, $value, $this->template));        
+        return  new template(str_replace($pattern, $value, $this->template));
     }
 
     /**

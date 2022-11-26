@@ -23,10 +23,15 @@ foreach ($select_changes as $fetch) {
 
 $template = file_get_contents(__DIR__ . "/theme/templates/index.template.php");
 
+articles::init();
+
+\mc\logger::stdout()->info(json_encode(articles::getHtml(0, 5)));
+
 $fill = [
     "<!-- total_endgames -->" => $total_endgames,
     "<!-- last_changes -->" => $last_changes,
-    "<!-- login-form -->" => \mc\user::login_form()
+    "<!-- login-form -->" => \mc\user::login_form(),
+    "<!-- articles -->" => articles::getHtml(0, 5)
 ];
 
 echo (new \core\template($template))->fill($fill)->value();

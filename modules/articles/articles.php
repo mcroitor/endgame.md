@@ -11,7 +11,7 @@ class articles
 
     public static function init()
     {
-        articles::$crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "articles");
+        articles::$crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "article");
     }
 
     public static function get($offset, $limit)
@@ -20,12 +20,23 @@ class articles
     }
 
     public static function getHtml($offset, $limit) {
-        $template = file_get_contents(config::template_dir . "article.template.php");
+        $template = file_get_contents(__DIR__ . "/article.template.php");
         $data = articles::get($offset, $limit);
         $result = "";
+        $template = new template($template);
+        $template->set_prefix("<!-- ");
+        $template->set_suffix(" -->");
         foreach ($data as $article) {
-            $result .= (new template($template))->fill($article)->value();
+            $result .= $template->fill($article)->value();
         }
         return $result;
+    }
+    public static function createHtml() {
+        if (\mc\user::has_capability("article::create") === false){
+            header("locagion:" . config::www);
+            exit();
+        }
+        $template = file_get_contents(__DIR__ . "/article-form.template.php");
+        $template = new template($template);
     }
 }
