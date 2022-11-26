@@ -23,15 +23,28 @@ foreach ($select_changes as $fetch) {
 
 $template = file_get_contents(__DIR__ . "/theme/templates/index.template.php");
 
-articles::init();
 
-\mc\logger::stdout()->info(json_encode(articles::getHtml(0, 5)));
+$routes = [
+    "/" => function (array $params) {
+        return file_get_contents(config::template_dir . "searchform.template.php");
+    },
+    "about" => function (array $params) {
+        articles::init();
+        return articles::getHtml(0, 5);
+    },
+    "links" => function (array $params) {
+        return file_get_contents(config::template_dir . "links.template.php");
+    }
+];
+
+// register routes
+\mc\router::init($routes);
 
 $fill = [
     "<!-- total_endgames -->" => $total_endgames,
     "<!-- last_changes -->" => $last_changes,
     "<!-- login-form -->" => \mc\user::login_form(),
-    "<!-- articles -->" => articles::getHtml(0, 5)
+    "<!-- content -->" => \mc\router::run()
 ];
 
 echo (new \core\template($template))->fill($fill)->value();
