@@ -49,17 +49,6 @@
     display: block;
 }
 
-.dd {
-    position: relative;
-    float: left;
-    width: 320px;
-    height: 500px;
-    /*	border:1px outset #eee; */
-    text-align: center;
-    margin: 2px;
-    padding: 2px;
-}
-
 #pgnlive-wrapper {
     width: 80%;
     z-index: 15;
@@ -171,4 +160,15 @@
     .has-docked-nav .navbar>.container {
         width: 80%;
     }
+}
+
+.dd {
+    position: relative;
+    float: left;
+    width: 320px;
+    height: 500px;
+    /*	border:1px outset #eee; */
+    text-align: center;
+    margin: 2px;
+    padding: 2px;
 }
