@@ -6,9 +6,7 @@ if (!file_exists("config.php")) {
 }
 include_once __DIR__ . "/config.php";
 
-// total endgames
 $db = new \mc\sql\database(config::dsn);
-$total_endgames = $db->select(\meta\endgame::__name__, ["COUNT(*) AS total"])[0]['total'];
 
 // last changes
 $last_changes = "";
@@ -41,10 +39,10 @@ $routes = [
 \mc\router::init($routes);
 
 $fill = [
-    "<!-- total_endgames -->" => $total_endgames,
     "<!-- last_changes -->" => $last_changes,
     "<!-- login-form -->" => \mc\user::login_form(),
-    "<!-- content -->" => \mc\router::run()
+    "<!-- content -->" => \mc\router::run(),
+    "<!-- statistics -->" => statistics::block(),
 ];
 
 echo (new \core\template($template))->fill($fill)->value();
