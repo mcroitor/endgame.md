@@ -63,7 +63,6 @@ function fill(template, data) {
 
 async function getPosition(page) {
     get("advanced").className = "hidden";
-    showItem("diag");
     get("stat").innerHTML = "<h3>Loading... Please, wait!</h3>";
     let sendData = {
         "page": page,
@@ -188,9 +187,7 @@ function clearAll() {
 }
 
 async function pgnLive(pid) {
-    /* window.open('pgnlive/pgnlive.php?pid=' + pid, 'pgnlive', 'location=0,toolbar=0,scrollbar=auto'); */
     let pgn = await request('api/?q=pgn/' + pid);
-    console.log(pgn);
     let config = {
         "pgn": pgn.data,
         "showMoves": "right",
@@ -210,13 +207,6 @@ async function pgnLive(pid) {
 function getPgn(pid) {
     window.open('getpgn.php?pid=' + pid, 'getpgn', '');
     return false;
-}
-
-function showItem(item) {
-    get("diag").className = "hidden";
-    get("about").className = "hidden";
-    get("linx").className = "hidden";
-    get(item).className = "showed";
 }
 
 function getPdf() {
