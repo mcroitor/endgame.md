@@ -14,25 +14,26 @@
 </head>
 
 <body>
-    <section class="container">
-        <div class="header">
+    <div class="container">
+        <div class="header row">
             <h1>Chess Endgame Study Database</h1>
         </div>
-        <div class="navbar">
-            <a href="/" class="navbar-link">Query Results</a>
-            <a href="/?q=about" class="navbar-link">About</a>
-            <a href="/?q=links" class="navbar-link">Links</a>
-            <a href="../builder/" class="navbar-link">FENBuilder</a>
+        <div class="navbar row">
+            <a href="/" class="navbar-link one column">Home</a>
+            <a href="/?q=about" class="navbar-link one column">About</a>
+            <a href="/?q=links" class="navbar-link one column">Links</a>
+            <a href="../builder/" class="navbar-link one column">FENBuilder</a>
             <!-- login-form -->
         </div>
-        <p>There are <strong><!-- total_endgames --></strong> endgames in the database.</p>
         <!-- content -->
-        <div class="footer"><!-- statisitcs --></div>
-        <div id="pgnlive-wrapper" class="hidden">
-            <div class="titlebar"><a href="javascript:close()" class="close-icon">X</a></div>
-            <div id="pgnlive"></div>
-        </div>
-    </section>
+    </div>
+    <div id="pgnlive-wrapper" class="hidden">
+        <div class="titlebar"><a href="javascript:close()" class="close-icon">X</a></div>
+        <div id="pgnlive"></div>
+    </div>
+    <div class="container footer">
+        <!-- statistics -->
+    </div>
 </body>
 
 </html>

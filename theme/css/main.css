@@ -1,5 +1,5 @@
 .container {
-    max-width: 1000px;
+    max-width: 1024px;
 }
 
 .header {
@@ -13,13 +13,15 @@
     border-top: 1px solid #eee;
     margin-top: 6rem;
     padding-top: 2rem;
-    font-size: 14px;
     text-align: center;
+    position: static;
+    bottom: 0;
+    width: 100%;
 }
 
-.navbar {
+/* .navbar {
     display: none;
-}
+} */
 
 #login-form {
     position: relative;
@@ -86,80 +88,69 @@
     text-decoration: none;
 }
 
-/* Larger than phone */
-@media (min-width: 550px) {
-    .header {
-        margin-top: 4rem;
-    }
+/* Navbar */
+.navbar+.docs-section {
+    border-top-width: 0;
 }
 
-/* Larger than tablet */
-@media (min-width: 750px) {
+.navbar,
+.navbar-spacer {
+    display: block;
+    width: 100%;
+    height: 4.5rem;
+    background: #fff;
+    z-index: 99;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
 
-    /* Navbar */
-    .navbar+.docs-section {
-        border-top-width: 0;
-    }
+.navbar-spacer {
+    display: none;
+}
 
-    .navbar,
-    .navbar-spacer {
-        display: block;
-        width: 100%;
-        height: 4.5rem;
-        background: #fff;
-        z-index: 99;
-        border-top: 1px solid #eee;
-        border-bottom: 1px solid #eee;
-    }
+.navbar>.container {
+    width: 100%;
+}
 
-    .navbar-spacer {
-        display: none;
-    }
+.navbar-list {
+    list-style: none;
+    margin-bottom: 0;
+}
 
-    .navbar>.container {
-        width: 100%;
-    }
+.navbar-item {
+    position: relative;
+    float: left;
+    margin-bottom: 0;
+}
 
-    .navbar-list {
-        list-style: none;
-        margin-bottom: 0;
-    }
+.navbar-link {
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .2rem;
+    margin-right: 35px;
+    text-decoration: none;
+    line-height: 4rem;
+    color: #222;
+}
 
-    .navbar-item {
-        position: relative;
-        float: left;
-        margin-bottom: 0;
-    }
+.navbar-link.active {
+    color: #33C3F0;
+}
 
-    .navbar-link {
-        text-transform: uppercase;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: .2rem;
-        margin-right: 35px;
-        text-decoration: none;
-        line-height: 4rem;
-        color: #222;
-    }
+.has-docked-nav .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
 
-    .navbar-link.active {
-        color: #33C3F0;
-    }
+.has-docked-nav .navbar-spacer {
+    display: block;
+}
 
-    .has-docked-nav .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-    }
-
-    .has-docked-nav .navbar-spacer {
-        display: block;
-    }
-
-    /* Re-overiding the width 100% declaration to match size of % based container */
-    .has-docked-nav .navbar>.container {
-        width: 80%;
-    }
+/* Re-overiding the width 100% declaration to match size of % based container */
+.has-docked-nav .navbar>.container {
+    width: 80%;
 }
 
 .dd {
