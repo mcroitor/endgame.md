@@ -1,4 +1,4 @@
 /nbproject/
 /tools/
 /checkers/
-/database/endgame.*.sqlite
+/database/*.sqlite
