@@ -33,10 +33,13 @@ class articles
     }
     public static function createHtml() {
         if (\mc\user::has_capability("article::create") === false){
-            header("locagion:" . config::www);
+            header("location:" . config::www);
             exit();
         }
         $template = file_get_contents(__DIR__ . "/article-form.template.php");
         $template = new template($template);
+        $template->set_prefix("<!-- ");
+        $template->set_suffix(" -->");
+        return $template->fill(["path" => config::www . "/modules/articles"])->value();
     }
 }

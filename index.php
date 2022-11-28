@@ -30,6 +30,10 @@ $routes = [
         articles::init();
         return articles::getHtml(0, 5);
     },
+    "article/new" => function (array $params) {
+        articles::init();
+        return articles::createHtml();
+    },
     "links" => function (array $params) {
         return file_get_contents(config::template_dir . "links.template.php");
     }
