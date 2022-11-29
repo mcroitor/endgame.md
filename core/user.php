@@ -23,7 +23,6 @@ class user
             ];
         }
         user::repair();
-        \mc\logger::stdout()->info(json_encode($_SESSION['user']));
     }
 
     private static function repair()

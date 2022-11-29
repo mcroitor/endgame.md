@@ -1,0 +1,5 @@
+{
+    "user/login" : "\\mc\\user::login",
+    "user/logout" : "\\mc\\user::logout",
+    "pgn" : "get_pgn"
+}
