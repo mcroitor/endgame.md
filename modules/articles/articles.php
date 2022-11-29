@@ -19,7 +19,9 @@ class articles
         return articles::$crud->all($offset, $limit);
     }
 
-    public static function getHtml($offset, $limit) {
+    public static function getHtml(array $params) {
+        $offset = isset($params[0])? (int)$params[0] : 0;
+        $limit = isset($params[1]) ? (int)$params[1] : 5;
         $template = file_get_contents(__DIR__ . "/article.template.php");
         $data = articles::get($offset, $limit);
         $result = "";

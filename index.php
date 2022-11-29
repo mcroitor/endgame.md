@@ -18,22 +18,16 @@ foreach ($select_changes as $fetch) {
     . "endgames from {$changes->filename}</li>";
 }
 
-
 $template = file_get_contents(__DIR__ . "/theme/templates/index.template.php");
 
+articles::init();
 
 $routes = [
     "/" => function (array $params) {
         return file_get_contents(config::template_dir . "searchform.template.php");
     },
-    "about" => function (array $params) {
-        articles::init();
-        return articles::getHtml(0, 5);
-    },
-    "article/new" => function (array $params) {
-        articles::init();
-        return articles::createHtml();
-    },
+    "about" => "articles::getHtml",
+    "article/new" => "articles::createHtml",
     "links" => function (array $params) {
         return file_get_contents(config::template_dir . "links.template.php");
     }
