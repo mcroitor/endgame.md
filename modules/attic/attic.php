@@ -2,7 +2,11 @@
 
 use core\template;
 
-class articles
+/**
+ * just another type of articles (very specific) for showing
+ * projects for downloading.
+ */
+class attic
 {
     /**
      * @property \mc\sql\crud
@@ -11,18 +15,18 @@ class articles
 
     public static function init()
     {
-        articles::$crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "article");
+        attic::$crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "attic");
     }
 
     public static function get($offset, $limit)
     {
-        return articles::$crud->all($offset, $limit);
+        return attic::$crud->all($offset, $limit);
     }
 
     public static function getHtml(array $params) {
         $offset = isset($params[0])? (int)$params[0] : 0;
         $limit = isset($params[1]) ? (int)$params[1] : 5;
-        $template = file_get_contents(__DIR__ . "/article.template.php");
+        $template = file_get_contents(__DIR__ . "/attic.template.php");
         $data = articles::get($offset, $limit);
         $result = "";
         $template = new template($template);
@@ -32,17 +36,5 @@ class articles
             $result .= $template->fill($article)->value();
         }
         return $result;
-    }
-    
-    public static function createHtml() {
-        if (\mc\user::has_capability("article::create") === false){
-            header("location:" . config::www);
-            exit();
-        }
-        $template = file_get_contents(__DIR__ . "/article-form.template.php");
-        $template = new template($template);
-        $template->set_prefix("<!-- ");
-        $template->set_suffix(" -->");
-        return $template->fill(["path" => config::www . "/modules/articles"])->value();
     }
 }
