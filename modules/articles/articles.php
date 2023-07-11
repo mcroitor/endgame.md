@@ -19,6 +19,7 @@ class articles
         return articles::$crud->all($offset, $limit);
     }
 
+    #[\mc\route("about")]
     public static function getHtml(array $params) {
         $offset = isset($params[0])? (int)$params[0] : 0;
         $limit = isset($params[1]) ? (int)$params[1] : 5;
@@ -34,6 +35,7 @@ class articles
         return $result;
     }
     
+    #[\mc\route("article/new")]
     public static function createHtml() {
         if (\mc\user::has_capability("article::create") === false){
             header("location:" . config::www);

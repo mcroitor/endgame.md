@@ -26,8 +26,8 @@ $routes = [
     "/" => function (array $params) {
         return file_get_contents(config::template_dir . "searchform.template.php");
     },
-    "about" => "articles::getHtml",
-    "article/new" => "articles::createHtml",
+//    "about" => "articles::getHtml",
+//    "article/new" => "articles::createHtml",
     "links" => function (array $params) {
         return file_get_contents(config::template_dir . "links.template.php");
     }

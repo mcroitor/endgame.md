@@ -75,6 +75,7 @@ class user
         return user::role() === $role;
     }
 
+    #[route("user/login")]
     public static function login()
     {
         $db = new \mc\sql\database(\config::dsn);
@@ -108,6 +109,7 @@ class user
         return $result;
     }
 
+    #[route("user/logout")]
     public static function logout()
     {
         session_destroy();
