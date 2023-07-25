@@ -50,6 +50,10 @@ class user
         return user::session()["name"];
     }
 
+    public static function id() {
+        return user::session()["id"];
+    }
+
     public static function role()
     {
         return user::session()["role"];
@@ -132,5 +136,13 @@ class user
         $db = new \mc\sql\database(config::dsn);
         $data["password"] = user::crypt($data["login"], $data["password"]);
         return $db->insert("user", $data);
+    }
+    
+    public static function user_menu() {
+        if(user::has_capability("user::authenticate")) {
+            return "";
+        }
+        return 
+            '<a href="/?q=article/new" class="navbar-link one column">Article</a>';
     }
 }

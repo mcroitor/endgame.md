@@ -11,7 +11,9 @@ class articles
 
     public static function init()
     {
-        articles::$crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "article");
+        articles::$crud = new \mc\sql\crud(
+            new \mc\sql\database(config::dsn),
+            \meta\article::__name__);
     }
 
     public static function get($offset, $limit)
@@ -46,5 +48,23 @@ class articles
         $template->set_prefix("<!-- ");
         $template->set_suffix(" -->");
         return $template->fill(["path" => config::www . "/modules/articles"])->value();
+    }
+
+    #[\mc\route("article/register")]
+    public static function register() {
+        if (\mc\user::has_capability("article::create") === false){
+            header("location:" . config::www);
+            exit();
+        }
+
+        $data = [
+            \meta\article::AUTHOR => \mc\user::id(),
+            \meta\article::TITLE => filter_input(INPUT_POST, "article-title"),
+            \meta\article::BODY => filter_input(INPUT_POST, "article-body"),
+            \meta\article::PUBLISHED => date("Y-m-d H:i:s"),
+        ];
+        self::$crud->insert($data);
+        header("location:" . config::www . "/?q=about");
+        return "";
     }
 }
