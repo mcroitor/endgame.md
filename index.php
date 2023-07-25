@@ -30,6 +30,7 @@ $fill = [
     "<!-- user-menu -->" => \mc\user::user_menu(),
     "<!-- content -->" => \mc\router::run(),
     "<!-- statistics -->" => statistics::block(),
+    "<!-- www -->" => config::www
 ];
 
 echo (new \core\template($template))->fill($fill)->value();
