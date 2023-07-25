@@ -1,4 +1,4 @@
-<form method="post" action="/?q=article/register">
+<form method="post" action="<!-- www -->/?q=article/register">
     <div class="row">
         <div class="twelve columns">
             <label for="article-title">Article title</label>
