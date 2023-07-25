@@ -79,20 +79,20 @@ async function getPosition(page) {
         "cook": get("cook").checked
     };
 
-    const result = await request("data.php", sendData);
-    const p = result["html"];
+    const result = await request("api/?q=data", sendData);
+    //const p = JSON.parse(result);
     get("diag").innerHTML = "";
-    for (const desc of p) {
+    for (const desc of result.html) {
         get("diag").innerHTML += fill(DIAGRAM_TPL, desc);
     }
 
-    get("stat").innerHTML = "<h5>" + result["stat"] +
+    get("stat").innerHTML = "<h5>" + result.stat +
         " positions found.  <a href='javascript:getPdf();'>get pdf</a> (no more then 1000 diagrams per PDFfile)</h5>";
     if (page !== 0) {
         get("stat").innerHTML += "<a href='#' onclick='getPosition(" + (page - 1) +
             ")'><img src='images/left.gif' /></a> ";
     }
-    if (page * 12 + 12 < result["stat"]) {
+    if (page * 12 + 12 < result.stat) {
         get("stat").innerHTML += " <a href='#' onclick='getPosition(" + (page + 1) +
             ")'><img src='images/right.gif' /></a>";
     }

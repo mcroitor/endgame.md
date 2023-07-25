@@ -44,6 +44,7 @@ class config {
         "dblogger",
         "lib",
         "logger/mc/logger",
+        "router/mc/route",
         "router/mc/router",
         "template",
         "user",

@@ -41,6 +41,13 @@ class database {
     }
 
     /**
+     * Close connection. After this queries are invalid and object recreating is obligatory.
+     */
+    public function close() {
+        $this->pdo = null;
+    }
+
+    /**
      * Common query method
      * @global string $site
      * @param string $query
@@ -183,13 +190,13 @@ class database {
      * insert values in table, returns id of inserted data.
      * @param string $table
      * @param array $values
-     * @return int
+     * @return string|false
      */
-    public function insert(string $table, array $values): int {
+    public function insert(string $table, array $values): string|false {
         $columns = \implode(", ", \array_keys($values));
         // quoting values
         $quoted_values = \array_values($values);
-        foreach($quoted_values as $key => $value) {
+        foreach ($quoted_values as $key => $value) {
             $quoted_values[$key] = $this->pdo->quote($value);
         }
         $data = \implode(",  ", $quoted_values);
@@ -206,7 +213,7 @@ class database {
      */
     public function exists(string $table, array $where): bool {
         $result = $this->select($table, ["count(*) as count"], $where);
-        return count($result) >0 && $result[0]["count"] > 0;
+        return count($result) > 0 && $result[0]["count"] > 0;
     }
 
     /**
