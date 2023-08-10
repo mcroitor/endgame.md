@@ -23,10 +23,39 @@
     display: none;
 } */
 
+.icon {
+    width: 2rem;
+    height: 2rem;
+    padding: 0.2rem;
+}
+
 #login-form {
     position: relative;
     float: right;
     margin: 2px;
+}
+
+.dropdown {
+    display: block;
+    position: relative;
+    float: right;
+}
+
+.dropdown > .dropdown-title {
+    display: block;
+    padding: 1rem;
+}
+
+.dropdown:hover > .dropdown-title {
+    display: none;
+}
+
+.dropdown > .dropdown-body {
+    display: none;
+}
+
+.dropdown:hover > .dropdown-body {
+    display: block;
 }
 
 #login-form input {

@@ -9,8 +9,6 @@ class user
     private const GUEST_NAME = "__guest__";
     private const GUEST_ROLE = "guest";
 
-    private const LOGOUT_FORM = "<a href='/api/?q=user/logout' id='login-form' class='navbar-link'>Log Out</a>";
-
     public static function init()
     {
         session_start();
@@ -125,7 +123,7 @@ class user
         if (user::has_capability("user::authenticate")) {
             return file_get_contents(config::template_dir . "loginform.template.php");
         }
-        return user::LOGOUT_FORM;
+        return file_get_contents(config::template_dir . "usermenu.template.php");
     }
 
     private static function crypt(string $login, string $password) {
@@ -142,7 +140,7 @@ class user
         if(user::has_capability("user::authenticate")) {
             return "";
         }
-        return 
+        return
             '<a href="/?q=article/new" class="navbar-link one column">Article</a>';
     }
 }
