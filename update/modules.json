@@ -17,5 +17,12 @@
         "source": "src",
         "branch": "master",
         "destination" : "./../core/router"
+    },
+    {
+        "user": "mcroitor",
+        "repository": "template",
+        "source": "src",
+        "branch": "main",
+        "destination" : "./../core/template"
     }
 ]

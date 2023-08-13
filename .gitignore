@@ -2,3 +2,4 @@
 /tools/
 /checkers/
 /database/*.sqlite
+__tmp__/

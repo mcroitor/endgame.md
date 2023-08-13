@@ -1,6 +1,6 @@
 <?php
 
-use core\template;
+use mc\template;
 
 /**
  * just another type of articles (very specific) for showing

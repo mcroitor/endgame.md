@@ -14,19 +14,22 @@ class logger {
     public const WARN = 4;  // yellow color
     public const ERROR = 8; // red color
     public const FAIL = 16; // red color
+    public const DEBUG = self::INFO | self::PASS;
     
     private const LOG_TYPE = [
         self::INFO => "INFO",
+        self::DEBUG => "DEBUG",
         self::PASS => "PASS",
         self::WARN => "WARN",
         self::ERROR => "ERROR",
         self::FAIL => "FAIL"
     ];
 
-    var $logfile;
+    private $logfile;
+    private $pretifier = null;
+    private $debug = false;
 
     /**
-     * 
      * @param string $logfile
      */
     public function __construct(string $logfile = "php://stdout") {
@@ -34,16 +37,35 @@ class logger {
     }
 
     /**
+     * set a output pretifier function
+     * @param callable $pretifier
+     */
+    public function setPretifier(callable $pretifier) {
+        $this->pretifier = $pretifier;
+    }
+
+    /**
+     * enable / disable debug logging
+     * @param bool $enable
+     */
+    public function enableDebug(bool $enable = true){
+        $this->debug = $enable;
+    }
+
+    /**
      * write a message with specific log type marker
      * @param string $data
-     * @param string $log_type
+     * @param string $logType
      */
-    private function write(string $data,string  $log_type) {
+    private function write(string $data,string  $logType) {
         if (isset($_SESSION["timezone"])) {
             date_default_timezone_set($_SESSION["timezone"]);
         }
-        $type = self::LOG_TYPE[$log_type];
+        $type = self::LOG_TYPE[$logType];
         $text = date("Y-m-d H:i:s") . "\t{$type}: {$data}" . PHP_EOL;
+        if ($this->pretifier) {
+            $text = call_user_func($this->pretifier, $text);
+        }
         file_put_contents($this->logfile, $text, FILE_APPEND);
     }
 
@@ -85,6 +107,17 @@ class logger {
      */
     public function fail(string $data) {
         $this->write($data, self::FAIL);
+    }
+
+    /**
+     * debug message
+     * @param string $data
+     * @param bool $debug
+     */
+    public function debug(string $data, bool $debug = false) {
+        if($this->debug || $debug) {
+            $this->write($data, self::DEBUG);
+        }
     }
 
     /**

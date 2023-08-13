@@ -4,7 +4,7 @@
 if (!file_exists("config.php")) {
     exit("<h2>Site is not installed or damaged</h2>");
 }
-include_once("config.php");
+include_once __DIR__ . "/config.php";
 
 $rule = [
     "{" => "<div class='commentary'>{",
@@ -104,7 +104,7 @@ foreach ($result as $key => $value) {
     $pgn = $db->select("raw", ["*"], ["id" => $value[\meta\endgame::PID]])[0]["data"];
     $solution = preg_replace('/\[\w+ ".+"\]\s/', "", $pgn);
 
-    $position->solution = (new \core\template($solution))->fill($rule)->value();
+    $position->solution = (new \mc\template($solution))->fill($rule)->value();
     $pdf->DrawDiagram($position);
     $pdf->WriteHTML($position->solution);
 }

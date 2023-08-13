@@ -1,6 +1,6 @@
 <?php
 
-use core\template;
+use mc\template;
 use mc\sql\database;
 
 class statistics {

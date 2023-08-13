@@ -120,7 +120,7 @@ class router {
             $route_name = "{$chunks[0]}/{$chunks[1]}";
             array_shift($chunks);
             array_shift($chunks);
-            
+
             return self::$routes[$route_name]($chunks);
         }
 
@@ -129,11 +129,9 @@ class router {
             $route_name = $chunks[0];
             array_shift($chunks);
 
-            \mc\logger::stdout()->info("{$route_name} (" . json_encode($chunks) . ")");
             return self::$routes[$route_name]($chunks);
         }
-        
-        return self::$routes[self::$default]([]);
+        return self::$routes[self::$default]();
     }
 
     public static function getRoutes() {

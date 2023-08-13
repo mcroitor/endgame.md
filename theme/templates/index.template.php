@@ -23,7 +23,6 @@
             <a href="<!-- www -->/?q=about" class="navbar-link one column">About</a>
             <a href="<!-- www -->/?q=links" class="navbar-link one column">Links</a>
             <a href="/../builder/" class="navbar-link one column">FENBuilder</a>
-            <!-- user-menu -->
             <!-- login-form -->
         </div>
         <!-- content -->

@@ -46,7 +46,7 @@ class config {
         "logger/mc/logger",
         "router/mc/route",
         "router/mc/router",
-        "template",
+        "template/mc/template",
         "user",
     ];
 

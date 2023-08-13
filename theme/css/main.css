@@ -26,7 +26,8 @@
 .icon {
     width: 2rem;
     height: 2rem;
-    padding: 0.2rem;
+    padding: 0;
+    margin: 0;
 }
 
 #login-form {
@@ -39,10 +40,19 @@
     display: block;
     position: relative;
     float: right;
+    text-align: right;
+    width: 20rem;
+}
+
+.dropdown:hover {
+    border: 1px solid #ccc;
+    background-color: white;
+
 }
 
 .dropdown > .dropdown-title {
     display: block;
+    height: 2rem;
     padding: 1rem;
 }
 

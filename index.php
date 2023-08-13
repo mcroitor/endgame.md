@@ -33,4 +33,4 @@ $fill = [
     "<!-- www -->" => config::www
 ];
 
-echo (new \core\template($template))->fill($fill)->value();
+echo (new \mc\template($template))->fill($fill)->value();

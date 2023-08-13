@@ -140,7 +140,7 @@ class user
         if(user::has_capability("user::authenticate")) {
             return "";
         }
-        return
-            '<a href="/?q=article/new" class="navbar-link one column">Article</a>';
+        return '<div class="navbar-link twelve columns">Hello, ' . user::name() . '</div>' .
+            '<a href="/?q=article/new" class="navbar-link twelve columns">Article</a>';
     }
 }
