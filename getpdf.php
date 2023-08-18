@@ -48,23 +48,19 @@ class MB extends MakeBook {
 }
 
 $author = $_REQUEST["author"] ?? "";
-$wpiece = $_REQUEST["wpiece"] ?? 0;
-$bpiece = $_REQUEST["bpiece"] ?? 0;
-$wsign = $_REQUEST["wsign"] ?? ">";
-$bsign = $_REQUEST["bsign"] ?? ">";
+$wmin = $_REQUEST["wmin"] ?? 0;
+$wmax = $_REQUEST["wmax"] ?? 0;
+$bmin = $_REQUEST["bmin"] ?? 0;
+$bmax = $_REQUEST["bmax"] ?? 0;
 $piece_pattern = $_REQUEST["piece_pattern"] ?? "";
 $stipulation = $_REQUEST["stipulation"] ?? "-";
 $theme = $_REQUEST["theme"] ?? "-";
-$fromdate = !empty($_REQUEST["fromDate"]) ? $_REQUEST["fromDate"] . ".00.00" : "0000.00.00";
-$todate = !empty($_REQUEST["toDate"]) ? $_REQUEST["toDate"] . ".??.??" : "2050.00.00";
+$fromdate = $_REQUEST["fromDate"] ?? "0000";
+$todate = $_REQUEST["toDate"] ?? "2050";
 
 $query = "SELECT * FROM endgame WHERE author LIKE '%$author%' ";
-if ((int) $wpiece > 0) {
-    $query .= "AND whitep$wsign$wpiece ";
-}
-if ((int) $bpiece > 0) {
-    $query .= "AND blackp$bsign$bpiece ";
-}
+$query .= "AND whitep >= {$wmin} AND whitep <= {$wmax} ";
+$query .= "AND blackp >= {$bmin} AND blackp <= {$bmax}";
 if ($stipulation !== "-") {
     $query .= "AND stipulation LIKE '$stipulation' ";
 }
@@ -75,7 +71,7 @@ if ($piece_pattern != "") {
     $query .= "AND piece_pattern='$piece_pattern' ";
 }
 
-$query .= "AND date>='$fromdate' AND date<='$todate' ORDER BY date ASC LIMIT 1000";
+$query .= "AND date >= {$fromdate} AND date <= {$todate} ORDER BY date ASC LIMIT 1000";
 
 $result = $db->query_sql($query);
 

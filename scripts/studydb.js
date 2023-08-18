@@ -1,9 +1,11 @@
-const DIAGRAM_TPL = `<div class='dd'><a href='#' onclick='pgnLive(#pid#)' class='button'>PGNLive!</a>
-<a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>
-<h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#
-<center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>
-#stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#
-<input type='text' value='#fen#' style='width:300px;' /></div>`;
+const DIAGRAM_TPL = `<div class='dd'>
+        <a href='#' onclick='pgnLive(#pid#)' class='button'>PGNLive!</a>
+        <a href='#' onclick='getPgn(#pid#)' class='button'>Get PGN</a>
+        <h5 style='margin:5px;'>PID : #pid#</h5>#author#<br />#source#&nbsp;&nbsp;#date#
+        <center><img src='./modules/diagram/?fen=#fen#&size=32' /></center>
+        #stip#&nbsp;&nbsp;&nbsp;&nbsp;#pieces#
+        <input type='text' value='#fen#' style='width:300px;' />
+    </div>`;
 
 const VIEWER_TPL = `<div class="titlebar">
 <a href="javascript:close()" class="close-icon">X</a>
@@ -55,7 +57,7 @@ function request(uri, sendData) {
  */
 function fill(template, data) {
     let result = template;
-    for (let item in data) {
+    for (const item in data) {
         result = result.replaceAll(item, data[item]);
     }
     return result;
@@ -67,10 +69,10 @@ async function getPosition(page) {
     let sendData = {
         "page": page,
         "author": get("author").value,
-        "wpiece": get("wpiece").value,
-        "wsign": get("wsign").value,
-        "bpiece": get("bpiece").value,
-        "bsign": get("bsign").value,
+        "wmin": get("wmin").value,
+        "wmax": get("wmax").value,
+        "bmin": get("bmin").value,
+        "bmax": get("bmax").value,
         "piece_pattern": patternMake(),
         "stipulation": get("stipulation").value,
         "theme": get("theme").value,
@@ -80,7 +82,6 @@ async function getPosition(page) {
     };
 
     const result = await request("api/?q=data", sendData);
-    //const p = JSON.parse(result);
     get("diag").innerHTML = "";
     for (const desc of result.html) {
         get("diag").innerHTML += fill(DIAGRAM_TPL, desc);
@@ -100,95 +101,25 @@ async function getPosition(page) {
 
 function patternMake() {
     let result = "";
-    /*
-     i=0;
-     while(i<get("q0").value)
-     {
-     result += "a";
-     i++;
-     }
-     i=0;
-     while(i<get("r0").value)
-     {
-     result += "b";
-     i++;
-     }
-     i=0;
-     while(i<get("b0").value)
-     {
-     result += "c";
-     i++;
-     }
-     i=0;
-     while(i<get("n0").value)
-     {
-     result += "d";
-     i++;
-     }
-     i=0;
-     while(i<get("p0").value)
-     {
-     result += "e";
-     i++;
-     }
-     i=0;
-     while(i<get("q2").value)
-     {
-     result += "f";
-     i++;
-     }
-     i=0;
-     while(i<get("r2").value)
-     {
-     result += "g";
-     i++;
-     }
-     i=0;
-     while(i<get("b2").value)
-     {
-     result += "h";
-     i++;
-     }
-     i=0;
-     while(i<get("n2").value)
-     {
-     result += "i";
-     i++;
-     }
-     i=0;
-     while(i<get("p2").value)
-     {
-     result += "j";
-     i++;
-     }
-     */
     return result;
 }
 
 function clearAll() {
-    //    get("q0").value = '';
-    //    get("r0").value = '';
-    //    get("b0").value = '';
-    //    get("n0").value = '';
-    //    get("p0").value = '';
-    //    get("q2").value = '';
-    //    get("r2").value = '';
-    //    get("b2").value = '';
-    //    get("n2").value = '';
-    //    get("p2").value = '';
-    get("debug").innerHTML = '';
     get("stat").innerHTML = '';
     get("diag").innerHTML = '';
     get("author").value = '';
-    get("wpiece").value = '';
-    get("bpiece").value = '';
+    get("wmin").value = '3';
+    get("wmax").value = '3';
+    get("bmin").value = '3';
+    get("bmax").value = '3';
     get("fromDate").value = '';
     get("toDate").value = '';
 }
 
 async function pgnLive(pid) {
     let pgn = await request('api/?q=pgn/' + pid);
-    let config = {
+    console.log(pgn.data);
+    const config = {
         "pgn": pgn.data,
         "showMoves": "right",
         "showPlayers": "none",
@@ -205,26 +136,26 @@ async function pgnLive(pid) {
 }
 
 function getPgn(pid) {
-    window.open('getpgn.php?pid=' + pid, 'getpgn', '');
+    window.open('/api/?q=pgn/' + pid, 'getpgn', '');
     return false;
 }
 
 function getPdf() {
     const author = get("author").value;
-    const wpiece = get("wpiece").value;
-    const wsign = get("wsign").value;
-    const bpiece = get("bpiece").value;
-    const bsign = get("bsign").value;
+    const wmin = get("wmin").value;
+    const wmax = get("wmax").value;
+    const bmin = get("bmin").value;
+    const bmax = get("bmax").value;
     const piece_pattern = patternMake();
     const stipulation = get("stipulation").value;
     const theme = get("theme").value;
     const fromDate = get("fromDate").value;
     const toDate = get("toDate").value;
     window.open('getpdf.php?author=' + author +
-        '&wpiece=' + wpiece +
-        '&wsign=' + wsign +
-        '&bpiece=' + bpiece +
-        '&bsign=' + bsign +
+        '&wmin=' + wmin +
+        '&wmax=' + wmax +
+        '&bmin=' + bmin +
+        '&bmax=' + bmax +
         '&piece_pattern=' + piece_pattern +
         '&stipulation=' + stipulation +
         '&theme=' + theme +
