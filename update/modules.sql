@@ -3,5 +3,3 @@ CREATE TABLE modules (
     name TEXT NOT NULL,
     entry_point TEXT NOT NULL
 );
-
-INSERT INTO modules VALUES (null, "articles", "articles");

@@ -1,5 +1,7 @@
 <?php
 
+include_once __DIR__ . "/capabilities/article_capabilities.php";
+
 use mc\template;
 
 class articles
@@ -9,7 +11,7 @@ class articles
      */
     protected static $crud;
     public const MODULE_DIR = __DIR__;
-    public const THEMPLATES_DIR = articles::MODULE_DIR . "/templates/";
+    public const TEMPLATES_DIR = articles::MODULE_DIR . "/templates/";
 
     public static function init()
     {
@@ -27,7 +29,7 @@ class articles
     public static function getHtml(array $params) {
         $offset = isset($params[0])? (int)$params[0] : 0;
         $limit = isset($params[1]) ? (int)$params[1] : 5;
-        $template = file_get_contents(articles::THEMPLATES_DIR . "/article.template.php");
+        $template = file_get_contents(articles::TEMPLATES_DIR . "/article.template.php");
         $data = articles::get($offset, $limit);
         $result = "";
         $template = new template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
@@ -39,11 +41,11 @@ class articles
     
     #[\mc\route("article/new")]
     public static function createHtml() {
-        if (\mc\user::has_capability("article::create") === false){
+        if (\mc\user::has_capability(ARTICLE_CAPABILITY::CREATE) === false){
             header("location:" . config::www);
             exit();
         }
-        $template = file_get_contents(articles::THEMPLATES_DIR . "/article-form.template.php");
+        $template = file_get_contents(articles::TEMPLATES_DIR . "/article-form.template.php");
         $template = new template($template);
         $template->set_prefix("<!-- ");
         $template->set_suffix(" -->");
@@ -52,7 +54,7 @@ class articles
 
     #[\mc\route("article/create")]
     public static function create() {
-        if (\mc\user::has_capability("article::create") === false){
+        if (\mc\user::has_capability(ARTICLE_CAPABILITY::CREATE) === false){
             header("location:" . config::www);
             exit();
         }

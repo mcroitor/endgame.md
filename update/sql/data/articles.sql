@@ -1,18 +1,11 @@
-CREATE TABLE article (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    body TEXT NOT NULL,
-    author INTEGER NOT NULL,
-    published TEXT NOT NULL,
-    FOREIGN KEY(author) REFERENCES user(id)
-);
-
-INSERT INTO capabilities VALUES 
+-- article capabilities
+INSERT INTO capabilities VALUES
 (null, "article::create"),
 (null, "article::read"),
 (null, "article::update"),
 (null, "article::dalate");
 
+-- allow article capabilities
 INSERT INTO role_capabilities VALUES 
 (null, 3, 11, 1),
 (null, 1, 12, 1),
@@ -21,6 +14,7 @@ INSERT INTO role_capabilities VALUES
 (null, 3, 13, 1),
 (null, 3, 14, 1);
 
+-- default articles
 INSERT INTO article VALUES 
 (null, "About Chess endgame Study Database", "<p>Written by Croitor Mihail 
 ( mcroitor(at)gmail.com ), december 2008.
@@ -52,3 +46,6 @@ Internet, mostly from sites:</p>
 </ul>", 1, datetime('now', 'localtime')),
 (null, "<em>03.08.2020:</em> Migration!", "<p>I think is a good step to have personal, 
 independed page. Welcome to <em>https://endgame.md</em>!</p>", 1, datetime('now', 'localtime'));
+
+-- user menu
+INSERT INTO user_menu VALUES(1,'Create Article','/?q=article/new',12);

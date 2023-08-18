@@ -1,15 +1,14 @@
 <?php
 
+include_once __DIR__ . '/capabilities/endgame_capabilities.php';
+
 use mc\sql\database;
 use mc\user;
 
-class pgn
+class endgame
 {
-    protected const PGN_CREATE = "pgn::create";
-    protected const PGN_UPLOAD = "pgn::upload";
-    protected const PGN_UPDATE = "pgn::update";
-    protected const PGN_DELETE = "pgn::delete";
-
+    public const MODULE_DIR = __DIR__;
+    public const TEMPLATES_DIR = self::MODULE_DIR . "/templates/";
 
     protected const event_regex = "\\[Event \"[\\w\\s]*\"\\]";
     protected const white_regex = "\\[White \"[\\w\\s]*\"\\]";
@@ -18,31 +17,65 @@ class pgn
     protected const fen_regex = "\\[FEN \"[\\w/\\s\\-]+\"\\]";
     protected const unknown_regex = "\\[[\\w\"/\\s\\-.]*\"\\]";
 
+    #[\mc\route("pgn")]
     public static function get(array $params)
     {
         $pgnId = empty($params) ? 1 : (int)$params[0];
         $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "raw");
-        return $crud->select($pgnId);
+        $pgn = $crud->select($pgnId);
+        if(empty($pgn)) {
+            header("location:" . config::www);
+            exit();
+        }
+        header('Content-Type: text/txt');
+        header("Content-Disposition: attachment; filename=endgame_{$pgnId}.pgn");
+        echo json_encode($pgn);
+        exit();
     }
 
+    #[\mc\route('endgame/new')]
+    public static function newForm() {
+        if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
+            header("location:" . config::www);
+            exit();
+        }
+        $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-form.template.php");
+        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+        return $template->fill(["path" => config::www . "/modules/articles"])->value();
+
+    }
+
+    #[\mc\route('endgame/create')]
     public static function create(array $params)
     {
-        if (!user::has_capability(self::PGN_CREATE)) {
+        if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
             header("location:" . config::www);
             exit();
         }
         return null;
     }
 
+    #[\mc\route('endgame/import')]
+    public static function importForm(array $params) {
+        if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
+            header("location:" . config::www);
+            exit();
+        }
+        $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-import-form.template.php");
+        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+        return $template->value();
+
+    }
+
+    #[\mc\route("pgn/upload")]
     public static function upload(array $params)
     {
-        if (!user::has_capability(self::PGN_UPLOAD)) {
+        if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
             header("location:" . config::www);
             exit();
         }
         if (empty($_FILES["userfile"])) {
-            // rewrite, return to the page for file uploading
-            header("location:" . config::www);
+            header("location:" . config::www . "/?q=endgame/import");
             exit();
         }
         $filename = $_FILES['userfile']['name'];
@@ -111,5 +144,12 @@ class pgn
         preg_match(self::fen_regex, $game, $matches);
         $header["fen"] = $matches[0];
         return $header;
+    }
+
+    #[\mc\route("/")]
+    public static function search_form() {
+        $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-search-form.template.php");
+        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+        return $template->value();
     }
 }

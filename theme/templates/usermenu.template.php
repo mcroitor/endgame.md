@@ -4,6 +4,6 @@
     </div>
     <div class="dropdown-body container">
         <!-- user-menu -->
-        <a href='/api/?q=user/logout' id='login-form' class='navbar-link twelve columns'>Log Out</a>
+        <a href='/api/?q=user/logout' id='login-form' class='menu-item twelve columns'>Log Out</a>
     </div>
 </div>
