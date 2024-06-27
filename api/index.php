@@ -2,6 +2,8 @@
 
 include_once __DIR__ . "/../config.php";
 
+$logger = \mc\logger::stderr();
+
 // #[\mc\route("pgn")]
 function get_pgn(array $params)
 {
@@ -30,39 +32,50 @@ function get_data(array $params)
         $page = 0;
     }
 
-    $query = "SELECT * FROM endgame WHERE author LIKE '%{$request->author}%' ";
-    $query .= "AND whitep >= {$request->wmin} AND whitep <= {$request->wmax} ";
-    $query .= "AND blackp >= {$request->bmin} AND blackp <= {$request->bmax} ";
+    $query_config = [
+        \mc\sql\query::TYPE => \mc\sql\query::SELECT,
+        \mc\sql\query::TABLE => "endgame",
+        \mc\sql\query::FIELDS => ["*"],
+        \mc\sql\query::WHERE => [
+            "author LIKE '%{$request->author}%'",
+            "whitep BETWEEN {$request->wmin} and {$request->wmax}",
+            "blackp BETWEEN {$request->bmin} and {$request->bmax}",
+            "date BETWEEN {$request->fromDate} and {$request->toDate}",
+        ],
+    ];
+
     if ($request->stipulation !== "-") {
-        $query .= "AND stipulation LIKE '{$request->stipulation}' ";
+        $query_config[\mc\sql\query::WHERE][] = "stipulation LIKE '{$request->stipulation}'";
     }
     if ($request->theme !== "-") {
-        $query .= "AND theme LIKE '%{$request->theme}%' ";
+        $query_config[\mc\sql\query::WHERE][] = "theme LIKE '%{$request->theme}%'";
     }
     if ($request->piece_pattern != "") {
-        $query .= "AND piece_pattern='{$request->piece_pattern}' ";
+        $query_config[\mc\sql\query::WHERE][] = "piece_pattern='{$request->piece_pattern}'";
     }
-    $query .= "AND date >= {$request->fromDate} AND date <= {$request->toDate}";
     if (!empty($request->cook)) {
-        $query .= " AND cook=1";
+        $query_config[\mc\sql\query::WHERE][] = "cook=1";
     }
 
-    $queryResult = $db->query_sql($query);
+    $query = new \mc\sql\query($query_config);
+
+    $queryResult = $db->exec($query);
     $stat = count($queryResult);
 
-    $query .= " LIMIT $page, 12";
+
+    $query = $query->limit(12, $page);
 
     // logging
     $dblogger = new \core\dblogger($db, \meta\statistic::__name__);
     $logData = [
-        \meta\statistic::QUERY => $query,
+        \meta\statistic::QUERY => $query->build(),
         \meta\statistic::TIME => time(),
         \meta\statistic::IP => $_SERVER['REMOTE_ADDR']
     ];
     $dblogger->write($logData);
     //end logging
 
-    $result = $db->query_sql($query);
+    $result = $db->exec($query);
 
     foreach ($result as $fetch) {
         $html[] = [
@@ -83,5 +96,6 @@ function get_data(array $params)
 \mc\router::init();
 
 // process route
-// \mc\logger::stdout()->debug("routes: " . json_encode(\mc\router::getRoutes()), true);
+$logger->debug("routes: " . json_encode(\mc\router::getRoutes()), config::debug);
 echo json_encode(\mc\router::run());
+$logger->debug("route: " . \mc\router::getSelectedRoute(), config::debug);

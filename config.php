@@ -42,6 +42,7 @@ class config {
         "clitext",
         "database/mc/database",
         "database/mc/crud",
+        "database/mc/query",
         "dblogger",
         "lib",
         "logger/mc/logger",
