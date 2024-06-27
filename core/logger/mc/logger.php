@@ -127,4 +127,12 @@ class logger {
     public static function stdout(){
         return new logger();
     }
+
+    /**
+     * stderr logger builder
+     * @return \mc\logger
+     */
+    public static function stderr(){
+        return new logger("php://stderr");
+    }
 }
