@@ -7,6 +7,7 @@ if (!file_exists("config.php")) {
 include_once __DIR__ . "/config.php";
 
 $db = new \mc\sql\database(config::dsn);
+$logger = \mc\logger::stderr();
 
 $template = file_get_contents(__DIR__ . "/theme/templates/index.template.php");
 
@@ -21,12 +22,16 @@ $routes = [
 // register routes
 \mc\router::init($routes);
 
+$logger->debug("routes: " . json_encode(\mc\router::getRoutes()), config::debug);
+
 $fill = [
     "<!-- login-form -->" => \mc\user::login_form(),
     "<!-- user-menu -->" => \mc\user::user_menu(),
     "<!-- content -->" => \mc\router::run(),
     "<!-- statistics -->" => statistics::block(),
-    "<!-- www -->" => config::www
+    "<!-- www -->" => config::www,
 ];
+
+$logger->debug("route: " . \mc\router::getSelectedRoute(), config::debug);
 
 echo (new \mc\template($template))->fill($fill)->value();

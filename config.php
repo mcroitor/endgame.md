@@ -27,6 +27,7 @@ class config {
     public const theme_dir = self::root_dir . "theme" . DIRECTORY_SEPARATOR;
     public const template_dir = self::theme_dir . "templates" . DIRECTORY_SEPARATOR;
     public const dbname = "endgame.20220115.sqlite";
+    public const debug = true;
 
 /**
  * dsn for database connection. At the moment sqlite database is used, but

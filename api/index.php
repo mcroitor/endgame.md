@@ -22,8 +22,8 @@ function get_data(array $params)
     $request = json_decode($data);
     $request->author = translitIt($request->author);
 
-    $request->fromDate = $request->fromDate ?? "0000";
-    $request->toDate = $request->toDate ?? "2050";
+    $request->fromDate = empty($request->fromDate) ? "0000" : $request->fromDate;
+    $request->toDate = empty($request->toDate) ? "2050" : $request->toDate;
 
     $page = 12 * $request->page;
     if ($page < 0) {

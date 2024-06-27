@@ -1,6 +1,6 @@
 <div class="dropdown">
     <div class="dropdown-title">
-        <img src="images/ddmenu.png" alt="" class="icon" />
+        <img src="<!-- www -->/images/ddmenu.png" alt="" class="icon" />
     </div>
     <div class="dropdown-body container">
         <form method="POST" action="<!-- www -->/api/?q=user/login" id="login-form">
