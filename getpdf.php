@@ -1,7 +1,7 @@
 <?php
 
 // loading config data
-if (!file_exists("config.php")) {
+if (!file_exists(__DIR__ . "/config.php")) {
     exit("<h2>Site is not installed or damaged</h2>");
 }
 include_once __DIR__ . "/config.php";

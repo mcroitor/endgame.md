@@ -1,6 +1,7 @@
 <?php
 
 include_once __DIR__ . '/capabilities/endgame_capabilities.php';
+include_once __DIR__ . '/lib/pgnparser.php';
 
 use mc\sql\database;
 use mc\user;
@@ -9,13 +10,6 @@ class endgame
 {
     public const MODULE_DIR = __DIR__;
     public const TEMPLATES_DIR = self::MODULE_DIR . "/templates/";
-
-    protected const event_regex = "\\[Event \"[\\w\\s]*\"\\]";
-    protected const white_regex = "\\[White \"[\\w\\s]*\"\\]";
-    protected const black_regex = "\\[Black \"[\\w\\s]*\"\\]";
-    protected const result_regex = "\\[Result \"[\\w\\s]*\"\\]";
-    protected const fen_regex = "\\[FEN \"[\\w/\\s\\-]+\"\\]";
-    protected const unknown_regex = "\\[[\\w\"/\\s\\-.]*\"\\]";
 
     #[\mc\route("pgn")]
     public static function get(array $params)
@@ -79,18 +73,31 @@ class endgame
             exit();
         }
         $filename = $_FILES['userfile']['name'];
-        $pgn = file_get_contents($_FILES['userfile']['tmp_name']) or die("file opening error");
-        $games = self::explode_games($pgn);
+        $parser = new PGNParser($_FILES['userfile']['tmp_name']);
         $db = new database(config::dsn);
+        $endgame_exists = [];
+
+        $games = $parser->getGames();
+
+        \mc\logger::stderr()->info("Endgame import: " . count($games) . " games found in file: " . $filename);
 
         foreach ($games as $game) {
-            $headers = self::get_game_header($game);
+            $headers = $game->getInfo();
+            $test_fen = $db->select(
+                "endgame", 
+                ["pid, fen"], 
+                ["fen LIKE '%{$headers[ChessGame::FEN]}%'"]);
+            if (!empty($test_fen)) {
+                $endgame_exists[] = $test_fen[0];
+                continue;
+            }
+
             $data = [
-                \meta\endgame::SOURCE => $headers["event"],
-                \meta\endgame::AUTHOR => $headers["white"],
-                \meta\endgame::DATE => $headers["date"],
-                \meta\endgame::STIPULATION => $headers["result"],
-                \meta\endgame::FEN => $headers["fen"],
+                \meta\endgame::SOURCE => $headers[ChessGame::EVENT],
+                \meta\endgame::AUTHOR => $headers[ChessGame::WHITE],
+                \meta\endgame::DATE => $headers[ChessGame::DATE],
+                \meta\endgame::STIPULATION => $headers[ChessGame::RESULT],
+                \meta\endgame::FEN => $headers[ChessGame::FEN],
                 \meta\endgame::AWARD => "",
                 \meta\endgame::WHITEP => "",
                 \meta\endgame::BLACKP => "",
@@ -99,15 +106,18 @@ class endgame
                 \meta\endgame::PIECE_PATTERN => "",
                 \meta\endgame::THEME => "unknown",
             ];
+            
             $db->insert("endgame", $data);
-            $db->insert("raw", ["data" => $game]);
+            $db->insert("raw", ["data" => $game->getRaw()]);
         }
         $db->insert("changes", [
-            "nr_games" => count($games),
+            "nr_games" => count($parser->getGames()) - count($endgame_exists),
             "filename" => $filename,
             "date" => date("Y-M-d - h:i:s A")
         ]);
-        return null;
+
+        \mc\logger::stderr()->info("Endgame import: " . count($endgame_exists) . " games already exists in the database");
+        return "";
     }
 
     public static function list(array $params)
@@ -116,34 +126,6 @@ class endgame
         $limit = isset($params[1]) ? (int)$params[1] : 20;
         $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), \meta\endgame::__name__);
         return $crud->all($offset, $limit);
-    }
-
-    private static function explode_games(string $pgn): array
-    {
-        $games = explode(PHP_EOL . "[Event ", $pgn);
-        $games = array_map(function ($game) {
-            return "[Event " . $game;
-        }, $games);
-        return $games;
-    }
-
-    private static function get_game_header(string $game): array
-    {
-        $matches = [];
-
-        $header = [];
-
-        preg_match(self::event_regex, $game, $matches);
-        $header["event"] = addslashes(trim($matches[0], "\"'"));
-        preg_match(self::white_regex, $game, $matches);
-        $header["white"] = addslashes(trim($matches[0], "\"'"));
-        preg_match(self::black_regex, $game, $matches);
-        $header["black"] = $matches[0];
-        preg_match(self::result_regex, $game, $matches);
-        $header["result"] = $matches[0];
-        preg_match(self::fen_regex, $game, $matches);
-        $header["fen"] = $matches[0];
-        return $header;
     }
 
     #[\mc\route("/")]
