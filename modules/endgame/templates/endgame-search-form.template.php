@@ -48,7 +48,7 @@
             <div class="two columns">Date: </div>
             <div class="ten columns">
                 <input type="number" min="0" max="3000" value="1900" id="fromDate" /> -
-                <input type="number" min="0" max="3000" value="2023" id="toDate" />
+                <input type="number" min="0" max="3000" value="<!-- last-date -->" id="toDate" />
             </div>
         </div>
         <div class="row">

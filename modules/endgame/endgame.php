@@ -117,7 +117,13 @@ class endgame
         ]);
 
         \mc\logger::stderr()->info("Endgame import: " . count($endgame_exists) . " games already exists in the database");
-        return "";
+        $info = "<h3>Endgame import results</h3>";
+        $info .= "<ul>";
+        $info .= "<li>" . count($games) . " games found in file: " . $filename . "</li>";
+        $info .= "<li>" . count($endgame_exists) . " games already exists in the database</li>";
+        $info .= "<li>" . (count($games) - count($endgame_exists)) . " games imported</li>";
+        $info .= "</ul>";
+        return $info;
     }
 
     public static function list(array $params)
@@ -132,6 +138,6 @@ class endgame
     public static function search_form() {
         $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-search-form.template.php");
         $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
-        return $template->value();
+        return $template->fill(["last-date" => date("Y")])->value();
     }
 }

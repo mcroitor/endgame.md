@@ -77,7 +77,7 @@ config::include_core();
 config::load_modules();
 
 /**
- * meta files describes structure of tables. Used for autocompleting.
+ * meta files describes structure of tables. Used for autocompletion.
  * not is necessary, by the way.
  */
 include_once config::root_dir . '/meta/_include_meta.php';
