@@ -224,7 +224,7 @@ class user
             return "";
         }
 
-        $userMenu = '<a href="/?q=user/info" class="menu-title twelve columns menu-item">Hello, ' .
+        $userMenu = '<a href="<!-- www -->/?q=user/info" class="menu-title twelve columns menu-item">Hello, ' .
             user::name() . '</a>';
         $db = new \mc\sql\database(config::dsn);
         $userMenuLinks = $db->select("user_menu");
@@ -249,7 +249,6 @@ class user
             header("location:" . config::www);
             exit();
         }
-        $db = new \mc\sql\database(config::dsn);
         $userInfo = self::session();
         $userCapabilities = self::capabilities();
         $template = file_get_contents(config::template_dir . "userinfo.template.php");
