@@ -34,7 +34,7 @@ class articles
         $result = "";
         $template = new template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
         foreach ($data as $article) {
-            $result .= $template->fill($article)->value();
+            $result = $template->fill($article)->value() . $result;
         }
         return $result;
     }

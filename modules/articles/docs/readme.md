@@ -1,4 +1,4 @@
 # capabilities
 
- - article::create
- - article::delete
+- article::create
+- article::delete

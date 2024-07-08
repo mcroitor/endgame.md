@@ -20,6 +20,7 @@ class user
             $_SESSION["user"] = [
                 "name" => self::GUEST_NAME,
                 "role" => self::GUEST_ROLE,
+                "id" => 0,
                 "capabilities" => []
             ];
         }
@@ -41,6 +42,9 @@ class user
             $_SESSION["user"]["capabilities"] = [
                 "user::authenticate"
             ];
+        }
+        if(empty($_SESSION["user"]["id"])) {
+            $_SESSION["user"]["id"] = 0;
         }
     }
 
@@ -132,7 +136,7 @@ class user
         $db = new \mc\sql\database(\config::dsn);
         $login = filter_input(INPUT_POST, "login");
         $password = filter_input(INPUT_POST, "password");
-        $user = $db->select("user", ["name", "role_id"], [
+        $user = $db->select("user", ["id", "name", "role_id"], [
             "login" => $login,
             "password" => user::crypt($login, $password)
         ]);
@@ -140,6 +144,7 @@ class user
             header("location:" . config::www);
             return;
         }
+        $_SESSION["user"]["id"] = $user[0]["id"];
         $_SESSION["user"]["name"] = $user[0]["name"];
         $_SESSION["user"]["role_id"] = $user[0]["role_id"];
         $_SESSION["user"]["capabilities"] = user::load_capabilities($_SESSION["user"]["role_id"]);
@@ -215,7 +220,8 @@ class user
             return "";
         }
 
-        $userMenu = '<div class="menu-title twelve columns">Hello, ' . user::name() . '</div>';
+        $userMenu = '<a href="/?q=user/info" class="menu-title twelve columns menu-item">Hello, ' .
+            user::name() . '</a>';
         $db = new \mc\sql\database(config::dsn);
         $userMenuLinks = $db->select("user_menu");
 
@@ -228,5 +234,30 @@ class user
         }
 
         return $userMenu;
+    }
+
+    /**
+     * user information
+     */
+    #[route("user/info")]
+    public static function info() {
+        if(user::has_capability("user::authenticate")) {
+            header("location:" . config::www);
+            exit();
+        }
+        $db = new \mc\sql\database(config::dsn);
+        $userInfo = self::session();
+        $userCapabilities = self::capabilities();
+        $template = file_get_contents(config::template_dir . "userinfo.template.php");
+        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+
+        $userInfo["capabilities"] = "<table class='u-full-width'>";
+        $userInfo["capabilities"] .= "<tr><th>Group</th><th>Capability</th></tr>";
+        foreach($userCapabilities as $capability) {
+            $group = explode("::", $capability)[0];
+            $userInfo["capabilities"] .= "<tr><td>{$group}</td><td>{$capability}</td></tr>";
+        }
+        $userInfo["capabilities"] .= "</table>";
+        return $template->fill($userInfo)->value();
     }
 }

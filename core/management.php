@@ -63,9 +63,14 @@ class management
     {
         $db = new \mc\sql\database(config::dsn);
         $crud = new \mc\sql\crud($db, \meta\modules::__name__);
-        $crud->insert([
-            \meta\modules::NAME => $module,
-            \meta\modules::ENTRY_POINT => $module,
-        ]);
+        if(file_exists(config::modules_dir . "{$module}/{$module}.php")){
+            $crud->insert([
+                \meta\modules::NAME => $module,
+                \meta\modules::ENTRY_POINT => $module
+            ]);
+        }
+        elseif(file_exists(config::modules_dir . "{$module}/install")){
+            include config::modules_dir . "{$module}/install";
+        }
     }
 }
