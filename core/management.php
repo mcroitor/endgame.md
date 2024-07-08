@@ -1,5 +1,7 @@
 <?php
 
+use mc\user;
+
 /**
  * site management class
  * Access to the settings and configurations of the site, install / uninstall modules, etc.
@@ -70,7 +72,99 @@ class management
             ]);
         }
         elseif(file_exists(config::modules_dir . "{$module}/install")){
-            include config::modules_dir . "{$module}/install";
+            include config::modules_dir . "{$module}/install/install.php";
         }
+    }
+
+    public static function uninstallModule($module)
+    {
+        $db = new \mc\sql\database(config::dsn);
+        $crud = new \mc\sql\crud($db, \meta\modules::__name__);
+        $crud->delete($module, \meta\modules::NAME);
+        if(file_exists(config::modules_dir . "{$module}/install")){
+            include config::modules_dir . "{$module}/install/uninstall.php";
+        }
+    }
+
+    #[\mc\route("management")]
+    public static function managementView(){
+        if (user::has_capability("user::authenticate") || user::role() !== "admin") {
+            header("location:" . config::www);
+            return "";
+        }
+        return file_get_contents(config::template_dir . "management.template.php");
+    }
+
+    #[\mc\route("management/users")]
+    public static function manageUsers(){
+        if (user::has_capability("user::authenticate") || user::role() !== "admin") {
+            header("location:" . config::www);
+            return "";
+        }
+        $template = new \mc\template(
+            file_get_contents(config::template_dir . "manageoption.template.php")
+        );
+        $html = "<table class='u-full-width'>";
+        $html .= "<tr><th>Username</th><th>Role</th><th>Action</th></tr>";
+        
+        $db = new \mc\sql\database(config::dsn);
+        $users = $db->select(\meta\user::__name__, ["*"]);
+        foreach ($users as $user) {
+            $role = $db->select(
+                \meta\role::__name__, 
+                [\meta\role::NAME], 
+                ["id" => $user[\meta\user::ROLE_ID]]
+            )[0][\meta\role::NAME];
+            $html .= "<tr><td>{$user[\meta\user::LOGIN]}</td>" .
+                "<td>{$role}</td>" .
+                "<td><a href='/?q=user/edit/{$user[\meta\user::ID]}'>Edit</a></td></tr>";
+        }
+        $html .= "</table>";
+        $data = [
+            "title" => "Manage Users",
+            "description" => "Here you can manage your users.",
+            "html" => $html,
+        ];
+        return $template->fill($data)->value();
+    }
+
+    #[\mc\route("management/modules")]
+    public static function manageModules(){
+        if (user::has_capability("user::authenticate") || user::role() !== "admin") {
+            header("location:" . config::www);
+            return "";
+        }
+        $template = new \mc\template(
+            file_get_contents(config::template_dir . "manageoption.template.php"),
+            [
+                "prefix" => "<!-- ",
+                "suffix" => " -->"
+            ]
+        );
+        $new = self::newModules();
+        $installed = self::installedModules();
+        $html = "";
+        if(!empty($new)){
+            $html .= "<h2>New Modules</h2>";
+            $html .= "<table class='u-full-width'>";
+            $html .= "<tr><th>Module name</th><th>Action</th></tr>";
+            foreach ($new as $module) {
+                $html .= "<tr><td>{$module}</td><td><a href='/?q=modules/install/{$module}'>Install</a></td></tr>";
+            }
+            $html .= "</table>";
+        }
+        $html .= "<h2>Installed Modules</h2>";
+        $html .= "<table class='u-full-width'>";
+        $html .= "<tr><th>Module name</th><th>Action</th></tr>";
+        foreach ($installed as $module) {
+            $html .= "<tr><td>{$module[\meta\modules::NAME]}</td><td><a href='/?q=module/uninstall/{$module[\meta\modules::NAME]}'>Uninstall</a></td></tr>";
+        }
+        $html .= "</table>";
+        $data = [
+            "title" => "Manage Modules",
+            "description" => "Here you can manage your modules.",
+            "html" => $html,
+        ];
+        return $template->fill($data)->value();
     }
 }

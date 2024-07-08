@@ -147,6 +147,10 @@ class user
         $_SESSION["user"]["id"] = $user[0]["id"];
         $_SESSION["user"]["name"] = $user[0]["name"];
         $_SESSION["user"]["role_id"] = $user[0]["role_id"];
+        $_SESSION["user"]["role"] = $db->select_column(
+            \meta\role::__name__, 
+            \meta\role::NAME, 
+            ["id" => $user[0]["role_id"]])[0];
         $_SESSION["user"]["capabilities"] = user::load_capabilities($_SESSION["user"]["role_id"]);
         header("location:" . config::www);
     }
@@ -196,7 +200,7 @@ class user
     /**
      * crypt password
      */
-    private static function crypt(string $login, string $password) {
+    public static function crypt(string $login, string $password) {
         return crypt($password . $login, $login);
     }
 

@@ -150,7 +150,7 @@ class clitext {
      * 
      * @param string $color
      * @return clitext
-     * @throws Exception
+     * @throws \Exception
      */
     public function color(string $color): clitext {
         if (isset(self::TXT_COLOR[$color])) {
@@ -158,7 +158,7 @@ class clitext {
         } elseif (constant($color)) {
             $color = $color;
         } else {
-            throw new Exception("undefined text color");
+            throw new \Exception("undefined text color");
         }
         return new clitext($this->text, $color);
     }
