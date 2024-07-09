@@ -8,10 +8,13 @@ use mc\user;
  */
 class management
 {
+    public static $logger;
+
     private static function installedModules()
     {
         $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), \meta\modules::__name__);
         $installed = $crud->all(0, $crud->count());
+        self::$logger->debug("Installed modules: " . json_encode($installed), \config::debug);
         return $installed;
     }
 
@@ -33,8 +36,10 @@ class management
                 $modules[] = $dir;
             }
         }
+        self::$logger->debug("Available modules: " . json_encode($modules), \config::debug);
         return $modules;
     }
+
     private static function brokenModules()
     {
         $installed = self::installedModules();
@@ -58,6 +63,7 @@ class management
                 $new[] = $module;
             }
         }
+        self::$logger->debug("New modules: " . json_encode($new), \config::debug);
         return $new;
     }
 
@@ -65,15 +71,16 @@ class management
     {
         $db = new \mc\sql\database(config::dsn);
         $crud = new \mc\sql\crud($db, \meta\modules::__name__);
-        if(file_exists(config::modules_dir . "{$module}/{$module}.php")){
+        self::$logger->debug("Installing module: " . $module, \config::debug);
+        if (file_exists(config::modules_dir . "{$module}/{$module}.php")) {
             $crud->insert([
                 \meta\modules::NAME => $module,
                 \meta\modules::ENTRY_POINT => $module
             ]);
-        }
-        elseif(file_exists(config::modules_dir . "{$module}/install")){
+        } elseif (file_exists(config::modules_dir . "{$module}/install")) {
             include config::modules_dir . "{$module}/install/install.php";
         }
+        header("location:" . config::www . "?q=management/modules");
     }
 
     public static function uninstallModule($module)
@@ -81,13 +88,14 @@ class management
         $db = new \mc\sql\database(config::dsn);
         $crud = new \mc\sql\crud($db, \meta\modules::__name__);
         $crud->delete($module, \meta\modules::NAME);
-        if(file_exists(config::modules_dir . "{$module}/install")){
+        if (file_exists(config::modules_dir . "{$module}/install")) {
             include config::modules_dir . "{$module}/install/uninstall.php";
         }
     }
 
     #[\mc\route("management")]
-    public static function managementView(){
+    public static function managementView()
+    {
         if (user::has_capability("user::authenticate") || user::role() !== "admin") {
             header("location:" . config::www);
             return "";
@@ -96,7 +104,8 @@ class management
     }
 
     #[\mc\route("management/users")]
-    public static function manageUsers(){
+    public static function manageUsers()
+    {
         if (user::has_capability("user::authenticate") || user::role() !== "admin") {
             header("location:" . config::www);
             return "";
@@ -106,13 +115,13 @@ class management
         );
         $html = "<table class='u-full-width'>";
         $html .= "<tr><th>Username</th><th>Role</th><th>Action</th></tr>";
-        
+
         $db = new \mc\sql\database(config::dsn);
         $users = $db->select(\meta\user::__name__, ["*"]);
         foreach ($users as $user) {
             $role = $db->select(
-                \meta\role::__name__, 
-                [\meta\role::NAME], 
+                \meta\role::__name__,
+                [\meta\role::NAME],
                 ["id" => $user[\meta\user::ROLE_ID]]
             )[0][\meta\role::NAME];
             $html .= "<tr><td>{$user[\meta\user::LOGIN]}</td>" .
@@ -129,7 +138,8 @@ class management
     }
 
     #[\mc\route("management/modules")]
-    public static function manageModules(){
+    public static function manageModules()
+    {
         if (user::has_capability("user::authenticate") || user::role() !== "admin") {
             header("location:" . config::www);
             return "";
@@ -144,12 +154,12 @@ class management
         $new = self::newModules();
         $installed = self::installedModules();
         $html = "";
-        if(!empty($new)){
+        if (!empty($new)) {
             $html .= "<h2>New Modules</h2>";
             $html .= "<table class='u-full-width'>";
             $html .= "<tr><th>Module name</th><th>Action</th></tr>";
             foreach ($new as $module) {
-                $html .= "<tr><td>{$module}</td><td><a href='/?q=modules/install/{$module}'>Install</a></td></tr>";
+                $html .= "<tr><td>{$module}</td><td><a href='<!-- www -->/?q=module/install/{$module}'>Install</a></td></tr>";
             }
             $html .= "</table>";
         }
@@ -157,7 +167,7 @@ class management
         $html .= "<table class='u-full-width'>";
         $html .= "<tr><th>Module name</th><th>Action</th></tr>";
         foreach ($installed as $module) {
-            $html .= "<tr><td>{$module[\meta\modules::NAME]}</td><td><a href='/?q=module/uninstall/{$module[\meta\modules::NAME]}'>Uninstall</a></td></tr>";
+            $html .= "<tr><td>{$module[\meta\modules::NAME]}</td><td><a href='<!-- www -->/?q=module/uninstall/{$module[\meta\modules::NAME]}'>Uninstall</a></td></tr>";
         }
         $html .= "</table>";
         $data = [
@@ -167,4 +177,44 @@ class management
         ];
         return $template->fill($data)->value();
     }
+
+    #[\mc\route("module/install")]
+    public static function install_module(array $params)
+    {
+        if (user::has_capability("user::authenticate") || user::role() !== "admin") {
+            header("location:" . config::www);
+            return "";
+        }
+        if (empty($params)) {
+            header("location:" . config::www . "?q=management/modules");
+            return "";
+        }
+        // check if the module exists
+        if (in_array($params[0], self::newModules())) {
+            self::installModule($params[0]);
+        }
+        header("location:" . config::www . "?q=management/modules");
+        return "";
+    }
+
+    #[\mc\route("module/uninstall")]
+    public static function uninstall_module(array $params)
+    {
+        if (user::has_capability("user::authenticate") || user::role() !== "admin") {
+            header("location:" . config::www);
+            return "";
+        }
+        if (empty($params)) {
+            header("location:" . config::www . "?q=management/modules");
+            return "";
+        }
+        // check if the module exists
+        if (in_array($params[0], array_column(self::installedModules(), \meta\modules::NAME))) {
+            self::uninstallModule($params[0]);
+        }
+        header("location:" . config::www . "?q=management/modules");
+        return "";
+    }
 }
+
+management::$logger = \mc\logger::stderr();
