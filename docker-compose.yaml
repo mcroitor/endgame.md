@@ -1,0 +1,31 @@
+services:
+  init:
+    build: 
+      context: .
+      dockerfile: ./docker/init/Dockerfile
+    volumes:
+      - site:/site
+      - database:/database
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - site:/var/www/html:ro
+    depends_on:
+      - app
+  app:
+    build: 
+      context: .
+      dockerfile: ./docker/php-fpm/Dockerfile
+    volumes:
+      - ./docker/php-fpm/php-additional.ini:/usr/local/etc/php/conf.d/php-additional.ini
+      - site:/var/www/html
+      - database:/database
+    depends_on:
+      - init
+
+volumes:
+  site:
+  database:
