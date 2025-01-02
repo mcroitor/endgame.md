@@ -4,7 +4,8 @@ FROM debian:10-slim
 
 VOLUME [ "/database", "/site" ]
 
-COPY --chown=www-data:www-data ./database /database
-COPY --chown=www-data:www-data ./site /site
+COPY ./database /src/database
+COPY ./site /src/site
+COPY ./docker/init/init.sh /init.sh
 
-CMD [ "echo", "Volumes preparation is done." ]
+CMD [ "/init.sh" ]

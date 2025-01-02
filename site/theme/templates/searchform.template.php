@@ -47,8 +47,8 @@
         <div class="row">
             <div class="two columns">Date: </div>
             <div class="ten columns">
-                <input type="number" min="0" max="3000" id="fromDate" /> -
-                <input type="number" min="0" max="3000" id="toDate" />
+                <input type="number" min="0" max="3000" id="from_date" /> -
+                <input type="number" min="0" max="3000" id="to_date" />
             </div>
         </div>
         <div class="row">

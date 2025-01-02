@@ -76,8 +76,8 @@ async function getPosition(page) {
         "piece_pattern": patternMake(),
         "stipulation": get("stipulation").value,
         "theme": get("theme").value,
-        "fromDate": get("fromDate").value,
-        "toDate": get("toDate").value,
+        "from_date": get("from_date").value,
+        "to_date": get("to_date").value,
         "cook": get("cook").checked
     };
 
@@ -112,8 +112,8 @@ function clearAll() {
     get("wmax").value = '3';
     get("bmin").value = '3';
     get("bmax").value = '3';
-    get("fromDate").value = '';
-    get("toDate").value = '';
+    get("from_date").value = '';
+    get("to_date").value = '';
 }
 
 async function pgnLive(pid) {
@@ -149,8 +149,8 @@ function getPdf() {
     const piece_pattern = patternMake();
     const stipulation = get("stipulation").value;
     const theme = get("theme").value;
-    const fromDate = get("fromDate").value;
-    const toDate = get("toDate").value;
+    const from_date = get("from_date").value;
+    const to_date = get("to_date").value;
     window.open('getpdf.php?author=' + author +
         '&wmin=' + wmin +
         '&wmax=' + wmax +
@@ -159,8 +159,8 @@ function getPdf() {
         '&piece_pattern=' + piece_pattern +
         '&stipulation=' + stipulation +
         '&theme=' + theme +
-        '&fromDate=' + fromDate +
-        '&toDate=' + toDate,
+        '&from_date=' + from_date +
+        '&to_date=' + to_date,
         'file.pdf', '');
 }
 

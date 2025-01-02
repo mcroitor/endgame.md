@@ -274,4 +274,20 @@ class analytics
         header("location:" . config::www . "/?q=analytics/authors");
         exit();
     }
+
+    #[\mc\route("analytics/links")]
+    public static function links(array $params)
+    {
+        $html = "<h3>Analytics links</h3>";
+        $links = \mc\router::getRoutes();
+        $links = array_filter($links, function($link) {
+            return str_contains($link, "analytics");
+        });
+        $html .= "<div class='row'><div class='twelve columns'><ul>";
+        foreach ($links as $link) {
+            $html .= "<li><a href='<!-- www -->/?q={$link}'>{$link}</a></li>";
+        }
+        $html .= "</div></div></ul>";
+        return $html;
+    }
 }

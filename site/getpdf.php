@@ -4,7 +4,6 @@
 if (!file_exists(__DIR__ . "/config.php")) {
     exit("<h2>Site is not installed or damaged</h2>");
 }
-include_once __DIR__ . "/config.php";
 
 $rule = [
     "{" => "<div class='commentary'>{",
@@ -22,12 +21,13 @@ $rule = [
     " $18" => "+-"
 ];
 
-$db = new \mc\sql\database(config::dsn);
+const FPDF_PATH = __DIR__ . "/modules/fpdf/";
+const FPDF_FONTPATH = FPDF_PATH . 'font/';
 
-define("FPDF_PATH", "modules/fpdf/");
-define('FPDF_FONTPATH', FPDF_PATH . 'font/');
-
+include_once __DIR__ . "/config.php";
 require_once __DIR__ . '/modules/makebook.php';
+
+$db = new \mc\sql\database(config::dsn);
 
 class MB extends MakeBook {
 
@@ -47,20 +47,60 @@ class MB extends MakeBook {
 
 }
 
-$author = $_REQUEST["author"] ?? "";
-$wmin = $_REQUEST["wmin"] ?? 0;
-$wmax = $_REQUEST["wmax"] ?? 0;
-$bmin = $_REQUEST["bmin"] ?? 0;
-$bmax = $_REQUEST["bmax"] ?? 0;
-$piece_pattern = $_REQUEST["piece_pattern"] ?? "";
-$stipulation = $_REQUEST["stipulation"] ?? "-";
-$theme = $_REQUEST["theme"] ?? "-";
-$fromdate = $_REQUEST["fromDate"] ?? "0000";
-$todate = $_REQUEST["toDate"] ?? "2050";
+$author = filter_input(
+    INPUT_GET, 
+    "author", 
+    FILTER_DEFAULT,
+    ["options" => ["default" => ""]]);
+$white_min = filter_input(
+    INPUT_GET, 
+    "wmin", 
+    FILTER_SANITIZE_NUMBER_INT,
+    ["options" => ["default" => 0]]);
+$white_max = filter_input(
+    INPUT_GET,
+    "wmax",
+    FILTER_SANITIZE_NUMBER_INT,
+    ["options" => ["default" => 0]]);
+$black_min = filter_input(
+    INPUT_GET, 
+    "bmin", 
+    FILTER_SANITIZE_NUMBER_INT,
+    ["options" => ["default" => 0]]);
+$black_max = filter_input(
+    INPUT_GET,
+    "bmax",
+    FILTER_SANITIZE_NUMBER_INT,
+    ["options" => ["default" => 0]]);
+$piece_pattern = filter_input(
+    INPUT_GET, 
+    "piece_pattern", 
+    FILTER_DEFAULT,
+    ["options" => ["default" => ""]]);
+$stipulation = filter_input(
+    INPUT_GET, 
+    "stipulation", 
+    FILTER_DEFAULT,
+    ["options" => ["default" => "-"]]);
+$theme = filter_input(
+    INPUT_GET, 
+    "theme", 
+    FILTER_DEFAULT,
+    ["options" => ["default" => "-"]]);
+$from_date = filter_input(
+    INPUT_GET, 
+    "from_date", 
+    FILTER_DEFAULT,
+    ["options" => ["default" => "0000"]]);
+$to_date = filter_input(
+    INPUT_GET, 
+    "to_date", 
+    FILTER_DEFAULT,
+    ["options" => ["default" => "2050"]]);
 
-$query = "SELECT * FROM endgame WHERE author LIKE '%$author%' ";
-$query .= "AND whitep >= {$wmin} AND whitep <= {$wmax} ";
-$query .= "AND blackp >= {$bmin} AND blackp <= {$bmax}";
+$query = "SELECT * FROM endgame WHERE author LIKE '%{$author}%' ";
+$query .= "AND whitep >= {$white_min} AND whitep <= {$white_max} ";
+$query .= "AND blackp >= {$black_min} AND blackp <= {$black_max}";
 if ($stipulation !== "-") {
     $query .= "AND stipulation LIKE '$stipulation' ";
 }
@@ -71,7 +111,7 @@ if ($piece_pattern != "") {
     $query .= "AND piece_pattern='$piece_pattern' ";
 }
 
-$query .= "AND date >= {$fromdate} AND date <= {$todate} ORDER BY date ASC LIMIT 1000";
+$query .= "AND date >= {$from_date} AND date <= {$to_date} ORDER BY date ASC LIMIT 1000";
 
 $result = $db->query_sql($query);
 
