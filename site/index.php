@@ -9,7 +9,7 @@ include_once __DIR__ . "/config.php";
 $db = new \mc\sql\database(config::dsn);
 $logger = \mc\logger::stderr();
 
-$template = file_get_contents(__DIR__ . "/theme/templates/index.template.php");
+$template = file_get_contents(config::template_dir . "index.template.php");
 
 articles::init();
 

@@ -62,7 +62,6 @@ function get_data(array $params)
     $queryResult = $db->exec($query);
     $stat = count($queryResult);
 
-
     $query = $query->limit(12, $page);
 
     // logging

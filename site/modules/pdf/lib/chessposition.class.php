@@ -1,28 +1,31 @@
 <?php
 
-class ChessPosition {
+class ChessPosition
+{
 
-    var $fen;
-    var $board;
-    var $fonsize;
-    var $style;
-    var $author;
-    var $stipulation;
-    var $solution;
-    var $source;
-    var $date;
-    var $award;
+    public $fen;
+    public $board;
+    public $fontSize;
+    public $style;
+    public $author;
+    public $stipulation;
+    public $solution;
+    public $source;
+    public $date;
+    public $award;
 
-    public function decodeJSON(string $str) {
+    public function decodeJSON(string $str)
+    {
         $col = ["a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "f" => 6, "g" => 7, "h" => 8];
         $obj = json_decode($str);
         $this->author = isset($obj->authors) ? implode("; ", $obj->authors) : "?";
         $this->stipulation = $obj->stipulation;
-        $this->solution = isset($obj->solution) ? $obj->solution : "?";
-        $this->source = isset($obj->source) ? $obj->source : "?";
-        $this->date = isset($obj->date) ? $obj->date : "????.??.??";
-        $this->award = isset($obj->distinction) ? $obj->distinction : "?";
-        $board = ["1222222223",
+        $this->solution = $obj->solution ?? "?";
+        $this->source = $obj->source ?? "?";
+        $this->date = $obj->date ?? "????.??.??";
+        $this->award = $obj->distinction ?? "?";
+        $board = [
+            "1222222223",
             "4*+*+*+*+5",
             "4+*+*+*+*5",
             "4*+*+*+*+5",
@@ -37,13 +40,17 @@ class ChessPosition {
             $r = (int) $col[$wpiece[1]];
             $c = 9 - (int) $wpiece[2];
             switch ($wpiece[0]) {
-                case "K": $piece = ($c % 2 == $r % 2) ? "k" : "K";
+                case "K":
+                    $piece = ($c % 2 == $r % 2) ? "k" : "K";
                     break;
-                case "Q": $piece = ($c % 2 == $r % 2) ? "q" : "Q";
+                case "Q":
+                    $piece = ($c % 2 == $r % 2) ? "q" : "Q";
                     break;
-                case "R": $piece = ($c % 2 == $r % 2) ? "r" : "R";
+                case "R":
+                    $piece = ($c % 2 == $r % 2) ? "r" : "R";
                     break;
-                case "B": $piece = ($c % 2 == $r % 2) ? "b" : "B";
+                case "B":
+                    $piece = ($c % 2 == $r % 2) ? "b" : "B";
                     break;
                 case "S":
                 case "N":
@@ -52,7 +59,8 @@ class ChessPosition {
                     else
                         $piece = ($c % 2 == $r % 2) ? "n" : "N";
                     break;
-                case "P": $piece = ($c % 2 == $r % 2) ? "p" : "P";
+                case "P":
+                    $piece = ($c % 2 == $r % 2) ? "p" : "P";
                     break;
             }
             $board[$c][$r] = $piece;
@@ -61,22 +69,28 @@ class ChessPosition {
             $r = (int) $col[$bpiece[1]];
             $c = 9 - (int) $bpiece[2];
             switch ($bpiece[0]) {
-                case "K": $piece = ($c % 2 == $r % 2) ? "l" : "L";
+                case "K":
+                    $piece = ($c % 2 == $r % 2) ? "l" : "L";
                     break;
-                case "Q": $piece = ($c % 2 == $r % 2) ? "w" : "W";
+                case "Q":
+                    $piece = ($c % 2 == $r % 2) ? "w" : "W";
                     break;
-                case "R": $piece = ($c % 2 == $r % 2) ? "t" : "T";
+                case "R":
+                    $piece = ($c % 2 == $r % 2) ? "t" : "T";
                     break;
                 case "B":
-                    if ($this->style == "alpha")
+                    if ($this->style == "alpha") {
                         $piece = ($c % 2 == $r % 2) ? "n" : "N";
-                    else
+                    } else {
                         $piece = ($c % 2 == $r % 2) ? "v" : "V";
+                    }
                     break;
                 case "S":
-                case "N": $piece = ($c % 2 == $r % 2) ? "m" : "M";
+                case "N":
+                    $piece = ($c % 2 == $r % 2) ? "m" : "M";
                     break;
-                case "P": $piece = ($c % 2 == $r % 2) ? "o" : "O";
+                case "P":
+                    $piece = ($c % 2 == $r % 2) ? "o" : "O";
                     break;
             }
             $board[$c][$r] = $piece;
@@ -85,7 +99,8 @@ class ChessPosition {
         $this->board = $board;
     }
 
-    public function makeBoard() {
+    public function makeBoard()
+    {
         // cut the tail if exist
         $parts = explode(" ", $this->fen);
         $fen = $parts[0];
@@ -98,7 +113,6 @@ class ChessPosition {
             } elseif (strpos("kqrbnpKQRBNP", $fen[$i]) !== false) {
                 $fields++;
             } elseif ($fen[$i] === '/') {
-                
             } else {
                 $fields += 100;
             }
@@ -109,62 +123,72 @@ class ChessPosition {
         }
 
         // building diagram
-        $board = array("1222222223");
-        $boardline = "4";
+        $board = ["1222222223"];
+        $boardLine = "4";
         $fields = 0;
         for ($i = 0; $i < $len; $i++) {
             if (strpos("kqrbnpKQRBNP", $fen[$i]) !== false) {
-                $posy = $fields >> 3;
-                $posx = $fields % 8;
+                $posY = $fields >> 3;
+                $posX = $fields % 8;
                 switch ($fen[$i]) {
-                    case "k": $piece = ($posy % 2 == $posx % 2) ? "l" : "L";
+                    case "k":
+                        $piece = ($posY % 2 == $posX % 2) ? "l" : "L";
                         break;
-                    case "q": $piece = ($posy % 2 == $posx % 2) ? "w" : "W";
+                    case "q":
+                        $piece = ($posY % 2 == $posX % 2) ? "w" : "W";
                         break;
-                    case "r": $piece = ($posy % 2 == $posx % 2) ? "t" : "T";
+                    case "r":
+                        $piece = ($posY % 2 == $posX % 2) ? "t" : "T";
                         break;
                     case "b":
                         if ($this->style == "alpha")
-                            $piece = ($posy % 2 == $posx % 2) ? "n" : "N";
+                            $piece = ($posY % 2 == $posX % 2) ? "n" : "N";
                         else
-                            $piece = ($posy % 2 == $posx % 2) ? "v" : "V";
+                            $piece = ($posY % 2 == $posX % 2) ? "v" : "V";
                         break;
-                    case "n": $piece = ($posy % 2 == $posx % 2) ? "m" : "M";
+                    case "n":
+                        $piece = ($posY % 2 == $posX % 2) ? "m" : "M";
                         break;
-                    case "p": $piece = ($posy % 2 == $posx % 2) ? "o" : "O";
+                    case "p":
+                        $piece = ($posY % 2 == $posX % 2) ? "o" : "O";
                         break;
-                    case "K": $piece = ($posy % 2 == $posx % 2) ? "k" : "K";
+                    case "K":
+                        $piece = ($posY % 2 == $posX % 2) ? "k" : "K";
                         break;
-                    case "Q": $piece = ($posy % 2 == $posx % 2) ? "q" : "Q";
+                    case "Q":
+                        $piece = ($posY % 2 == $posX % 2) ? "q" : "Q";
                         break;
-                    case "R": $piece = ($posy % 2 == $posx % 2) ? "r" : "R";
+                    case "R":
+                        $piece = ($posY % 2 == $posX % 2) ? "r" : "R";
                         break;
-                    case "B": $piece = ($posy % 2 == $posx % 2) ? "b" : "B";
+                    case "B":
+                        $piece = ($posY % 2 == $posX % 2) ? "b" : "B";
                         break;
                     case "N":
                         if ($this->style == "alpha")
-                            $piece = ($posy % 2 == $posx % 2) ? "h" : "H";
+                            $piece = ($posY % 2 == $posX % 2) ? "h" : "H";
                         else
-                            $piece = ($posy % 2 == $posx % 2) ? "n" : "N";
+                            $piece = ($posY % 2 == $posX % 2) ? "n" : "N";
                         break;
-                    case "P": $piece = ($posy % 2 == $posx % 2) ? "p" : "P";
+                    case "P":
+                        $piece = ($posY % 2 == $posX % 2) ? "p" : "P";
                         break;
                 }
-                $boardline .= $piece;
+                $boardLine .= $piece;
                 if (($fields + 1) % 8 == 0) {
-                    $board[] = $boardline . "5";
-                    $boardline = "4";
+                    $board[] = $boardLine . "5";
+                    $boardLine = "4";
                 }
                 $fields++;
             } elseif ($fen[$i] > "0" and $fen[$i] < "9") {
                 for ($j = 0; $j < $fen[$i]; $j++) {
-                    $posy = $fields >> 3;
-                    $posx = $fields % 8;
-                    $boardline .= ($posy % 2 == $posx % 2) ? "*" : "+";
+                    $posY = $fields >> 3;
+                    $posX = $fields % 8;
+                    $boardLine .= ($posY % 2 == $posX % 2) ? "*" : "+";
                     if (($fields + 1) % 8 == 0) {
 
-                        $board[] = $boardline . "5";
-                        $boardline = "4";
+                        $board[] = $boardLine . "5";
+                        $boardLine = "4";
                     }
                     $fields++;
                 }
@@ -175,9 +199,10 @@ class ChessPosition {
         return $board;
     }
 
-    public function __construct($_fen = "8/8/8/8/8/8/8/8", $_size = 16, $_style = "marrfont") {
+    public function __construct($_fen = "8/8/8/8/8/8/8/8", $_size = 16, $_style = "marrfont")
+    {
         $this->fen = $_fen;
-        $this->fontsize = $_size;
+        $this->fontSize = $_size;
         $this->style = $_style;
         $this->board = $this->makeBoard();
         $this->author = 'unknown';
@@ -185,5 +210,4 @@ class ChessPosition {
         $this->source = '';
         $this->solution = '';
     }
-
 }

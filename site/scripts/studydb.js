@@ -151,7 +151,7 @@ function getPdf() {
     const theme = get("theme").value;
     const from_date = get("from_date").value;
     const to_date = get("to_date").value;
-    window.open('getpdf.php?author=' + author +
+    window.open('/?q=pdf/get&author=' + author +
         '&wmin=' + wmin +
         '&wmax=' + wmax +
         '&bmin=' + bmin +

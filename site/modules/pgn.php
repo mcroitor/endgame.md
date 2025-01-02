@@ -101,8 +101,6 @@ class Pgn {
         $pgn .= "[White \"" . $this->white . "\"]" . PHP_EOL;
         $pgn .= "[Black \"" . $this->black . "\"]" . PHP_EOL;
         $pgn .= "[Result \"" . $this->result . "\"]" . PHP_EOL;
-        $pgn .= "[WhiteElo \"" . $this->whiteElo . "\"]" . PHP_EOL;
-        $pgn .= "[BlackElo \"" . $this->blackElo . "\"]" . PHP_EOL;
         $pgn .= "[FEN \"" . $this->fen . "\"]" . PHP_EOL;
         $pgn .= PHP_EOL . $this->moves . PHP_EOL;
 

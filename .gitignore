@@ -2,4 +2,6 @@
 /tools/
 /checkers/
 /database/*.sqlite
+/site/database/
 __tmp__/
+/site/config.php
