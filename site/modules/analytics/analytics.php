@@ -254,7 +254,11 @@ class analytics
 
     private static function updateAuthor($pid)
     {
-        $author = $_POST["author"] ?? "";
+        $author = filter_input(
+            INPUT_POST, 
+            "author", 
+            FILTER_DEFAULT,
+            ["options" => ["default" => ""]]);
         $db = new \mc\sql\database(config::dsn);
         $endgame = $db->select(
             \meta\endgame::__name__,

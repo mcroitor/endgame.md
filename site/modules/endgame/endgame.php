@@ -72,8 +72,8 @@ class endgame
             header("location:" . config::www . "/?q=endgame/import");
             exit();
         }
-        $filename = $_FILES['userfile']['name'];
-        $parser = new PGNParser($_FILES['userfile']['tmp_name']);
+        $filename = filter_var($_FILES['userfile']['name']);
+        $parser = new PGNParser(filter_var($_FILES['userfile']['tmp_name']));
         $db = new database(config::dsn);
         $endgame_exists = [];
 
