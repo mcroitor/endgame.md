@@ -1,5 +1,7 @@
 <?php
 
+namespace modules\endgame\capabilities;
+
 class ENDGAME_CAPABILITIY {
     public const CREATE = 'endgame::create';
     public const READ = 'endgame::read';

@@ -8,13 +8,12 @@ use mc\user;
  */
 class management
 {
-    public static $logger;
 
     private static function installedModules()
     {
-        $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), \meta\modules::__name__);
+        $crud = new \mc\sql\crud(\config::$db, \meta\modules::__name__);
         $installed = $crud->all(0, $crud->count());
-        self::$logger->debug("Installed modules: " . json_encode($installed), \config::debug);
+        \config::$logger->debug("Installed modules: " . json_encode($installed), \config::debug);
         return $installed;
     }
 
@@ -36,7 +35,7 @@ class management
                 $modules[] = $dir;
             }
         }
-        self::$logger->debug("Available modules: " . json_encode($modules), \config::debug);
+        \config::$logger->debug("Available modules: " . json_encode($modules), \config::debug);
         return $modules;
     }
 
@@ -63,15 +62,14 @@ class management
                 $new[] = $module;
             }
         }
-        self::$logger->debug("New modules: " . json_encode($new), \config::debug);
+        \config::$logger->debug("New modules: " . json_encode($new), \config::debug);
         return $new;
     }
 
     public static function installModule($module)
     {
-        $db = new \mc\sql\database(config::dsn);
-        $crud = new \mc\sql\crud($db, \meta\modules::__name__);
-        self::$logger->debug("Installing module: " . $module, \config::debug);
+        $crud = new \mc\sql\crud(\config::$db, \meta\modules::__name__);
+        \config::$logger->debug("Installing module: " . $module, \config::debug);
         if (file_exists(config::modules_dir . "{$module}/{$module}.php")) {
             $crud->insert([
                 \meta\modules::NAME => $module,
@@ -85,9 +83,8 @@ class management
 
     public static function uninstallModule($module)
     {
-        $db = new \mc\sql\database(config::dsn);
-        $crud = new \mc\sql\crud($db, \meta\modules::__name__);
-        $crud->delete($module, \meta\modules::NAME);
+        $crud = new \mc\sql\crud(\config::$db, \meta\modules::__name__);
+        $crud->delete($module);
         if (file_exists(config::modules_dir . "{$module}/install")) {
             include config::modules_dir . "{$module}/install/uninstall.php";
         }
@@ -116,10 +113,9 @@ class management
         $html = "<table class='u-full-width'>";
         $html .= "<tr><th>Username</th><th>Role</th><th>Action</th></tr>";
 
-        $db = new \mc\sql\database(config::dsn);
-        $users = $db->select(\meta\user::__name__, ["*"]);
+        $users = \config::$db->select(\meta\user::__name__, ["*"]);
         foreach ($users as $user) {
-            $role = $db->select(
+            $role = \config::$db->select(
                 \meta\role::__name__,
                 [\meta\role::NAME],
                 ["id" => $user[\meta\user::ROLE_ID]]
@@ -216,5 +212,3 @@ class management
         return "";
     }
 }
-
-management::$logger = \mc\logger::stderr();

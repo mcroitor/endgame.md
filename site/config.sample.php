@@ -54,6 +54,9 @@ class config
         "user",
     ];
 
+    public static $logger = null;
+    public static $db = null;
+
     /**
      * method for core loading (it is simulation of autoload, by the way).
      */
@@ -62,6 +65,8 @@ class config
         foreach (self::core as $class_name) {
             include_once self::core_dir . "{$class_name}.php";
         }
+        self::$logger = \mc\logger::stderr();
+        self::$db = new \mc\sql\database(self::dsn);
     }
 
     public static function load_modules()

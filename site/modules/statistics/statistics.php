@@ -1,31 +1,33 @@
 <?php
 
+namespace modules\statistics;
+
 use mc\template;
 use mc\sql\database;
 
 class statistics {
 
     public static function endgames() {
-        return (new database(config::dsn))->select("endgame", ["count(pid) as nr"])[0]["nr"];
+        return \config::$db->select("endgame", ["count(pid) as nr"])[0]["nr"];
     }
 
     public static function authors() {
-        return (new database(config::dsn))->select("endgame", ["count(distinct author) as nr"])[0]["nr"];
+        return \config::$db->select("endgame", ["count(distinct author) as nr"])[0]["nr"];
     }
 
     public static function queries() {
-        return (new database(config::dsn))->select("statistic", ["count(id) as nr"])[0]["nr"];
+        return \config::$db->select("statistic", ["count(id) as nr"])[0]["nr"];
     }
 
     public static function users() {
-        return (new database(config::dsn))->select("statistic", ["count(distinct ip) as nr"])[0]["nr"];
+        return \config::$db->select("statistic", ["count(distinct ip) as nr"])[0]["nr"];
     }
 
     public static function last_changes() {
         // last changes
         $last_changes = "";
         $changes_table = \meta\changes::__name__;
-        $select_changes = (new database(config::dsn))->query_sql(
+        $select_changes = \config::$db->query_sql(
             "SELECT * FROM {$changes_table} ORDER BY date DESC LIMIT 5");
         foreach ($select_changes as $fetch) {
             $changes = new \meta\changes($fetch);

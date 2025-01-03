@@ -1,13 +1,16 @@
 <?php
 
+namespace modules\articles;
+
 include_once __DIR__ . "/capabilities/article_capabilities.php";
 
 use mc\template;
+use modules\articles\capabilities\ARTICLE_CAPABILITY;
 
 class articles
 {
     /**
-     * @property \mc\sql\crud
+     * @property \mc\sql\crud $crud
      */
     protected static $crud;
     public const MODULE_DIR = __DIR__;
@@ -16,7 +19,7 @@ class articles
     public static function init()
     {
         articles::$crud = new \mc\sql\crud(
-            new \mc\sql\database(config::dsn),
+            \config::$db,
             \meta\article::__name__);
     }
 
@@ -29,10 +32,9 @@ class articles
     public static function getHtml(array $params) {
         $offset = isset($params[0])? (int)$params[0] : 0;
         $limit = isset($params[1]) ? (int)$params[1] : 5;
-        $template = file_get_contents(articles::TEMPLATES_DIR . "/article.template.php");
         $data = articles::get($offset, $limit);
         $result = "";
-        $template = new template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+        $template = \facade::template("/article.template.php", articles::TEMPLATES_DIR);
         foreach ($data as $article) {
             $result = $template->fill($article)->value() . $result;
         }
@@ -42,20 +44,17 @@ class articles
     #[\mc\route("article/new")]
     public static function createHtml() {
         if (\mc\user::has_capability(ARTICLE_CAPABILITY::CREATE) === false){
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
-        $template = file_get_contents(articles::TEMPLATES_DIR . "/article-form.template.php");
-        $template = new template($template);
-        $template->set_prefix("<!-- ");
-        $template->set_suffix(" -->");
-        return $template->fill(["path" => config::www . "/modules/articles"])->value();
+        $template = \facade::template("/article-form.template.php", articles::TEMPLATES_DIR);
+        return $template->fill(["path" => \config::www . "/modules/articles"])->value();
     }
 
     #[\mc\route("article/create")]
     public static function create() {
         if (\mc\user::has_capability(ARTICLE_CAPABILITY::CREATE) === false){
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
 
@@ -66,7 +65,7 @@ class articles
             \meta\article::PUBLISHED => date("Y-m-d H:i:s"),
         ];
         self::$crud->insert($data);
-        header("location:" . config::www . "/?q=about");
+        header("location:" . \config::www . "/?q=about");
         return "";
     }
 

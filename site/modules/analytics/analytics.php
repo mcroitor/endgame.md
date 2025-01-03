@@ -1,8 +1,12 @@
 <?php
 
-use mc\user;
+namespace modules\analytics;
 
 include_once __DIR__ . "/capabilities/analytics_capabilities.php";
+
+use mc\user;
+use modules\analytics\capabilities\ANALYTICS_CAPABILITY;
+use modules\endgame\capabilities\ENDGAME_CAPABILITIY;
 
 /**
  * Here we implement the logic for endgame analytics and statistics.
@@ -34,7 +38,7 @@ class analytics
             "invalid" => 0,
         ];
 
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $endgames = $db->select(\meta\endgame::__name__, ["*"], [
             \meta\endgame::STIPULATION . 
             " NOT IN ('{$okResults[0]}', '{$okResults[1]}', '{$okResults[2]}')"
@@ -63,7 +67,7 @@ class analytics
     {
         // invalid author starts with non-alphabetic symbol.
         // select 20 endgames max.
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $endgames = $db->select(
             \meta\endgame::__name__,
             ["*"],
@@ -83,7 +87,7 @@ class analytics
      */
     public static function fixPiecePatterns()
     {
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $endgames = $db->select(
             \meta\endgame::__name__, 
             ["*"],
@@ -176,7 +180,7 @@ class analytics
     public static function authors(array $params)
     {
         if(!user::has_capability(ENDGAME_CAPABILITIY::UPDATE)) {
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
         $brokenAuthors = self::detectBrokenAuthors();
@@ -200,7 +204,7 @@ class analytics
     public static function author(array $params)
     {
         if(!user::has_capability(ENDGAME_CAPABILITIY::UPDATE)) {
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
         $action = $params[0];
@@ -222,7 +226,7 @@ class analytics
 
     private static function editAuthor($pid)
     {
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $endgame = $db->select(
             \meta\endgame::__name__,
             ["*"],
@@ -244,11 +248,11 @@ class analytics
 
     private static function removeAuthor($pid)
     {
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $db->delete(
             \meta\endgame::__name__,
             [\meta\endgame::PID => $pid]);
-        header("location:" . config::www . "/?q=analytics/authors");
+        header("location:" . \config::www . "/?q=analytics/authors");
         exit();
     }
 
@@ -259,7 +263,7 @@ class analytics
             "author", 
             FILTER_DEFAULT,
             ["options" => ["default" => ""]]);
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $endgame = $db->select(
             \meta\endgame::__name__,
             ["*"],
@@ -275,7 +279,7 @@ class analytics
             $endgame,
             [\meta\endgame::PID => $pid]
         );
-        header("location:" . config::www . "/?q=analytics/authors");
+        header("location:" . \config::www . "/?q=analytics/authors");
         exit();
     }
 

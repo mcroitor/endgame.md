@@ -8,8 +8,7 @@ if (!file_exists(__DIR__ . "/../config.php")) {
 include_once __DIR__ . "/../config.php";
 
 $pid = filter_input(INPUT_GET, "pid");
-$db = new \mc\sql\database(config::dsn);
-$game = $db->select("raw", ["*"], ["id" => $pid])[0]["data"];
+$game = \config::$db->select("raw", ["*"], ["id" => $pid])[0]["data"];
 
 header('Content-type: text/plain');
 header("Content-Disposition: attachment; filename=endgame_{$pid}.pgn");

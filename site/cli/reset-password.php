@@ -28,9 +28,7 @@ if (count($opts) < 2) {
 $login = $opts["l"];
 $password = $opts["p"];
 
-$db = new \mc\sql\database(config::dsn);
-
-$users = $db->select(\meta\user::__name__, ["*"], ["login" => $login]);
+$users = \config::$db->select(\meta\user::__name__, ["*"], ["login" => $login]);
 
 if(empty($users)) {
     echo new clitext("User not found!", clitext::TXT_RED, clitext::BG_BRIGHT_WHITE);

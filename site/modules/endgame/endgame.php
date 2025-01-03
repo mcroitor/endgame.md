@@ -1,9 +1,11 @@
 <?php
 
+namespace modules\endgame;
+
 include_once __DIR__ . '/capabilities/endgame_capabilities.php';
 include_once __DIR__ . '/lib/pgnparser.php';
 
-use mc\sql\database;
+use modules\endgame\capabilities\ENDGAME_CAPABILITIY;
 use mc\user;
 
 class endgame
@@ -15,10 +17,10 @@ class endgame
     public static function get(array $params)
     {
         $pgnId = empty($params) ? 1 : (int)$params[0];
-        $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "raw");
+        $crud = new \mc\sql\crud(\config::$db, "raw");
         $pgn = $crud->select($pgnId);
-        if(empty($pgn)) {
-            header("location:" . config::www);
+        if (empty($pgn)) {
+            header("location:" . \config::www);
             exit();
         }
         header('Content-Type: text/txt');
@@ -28,53 +30,53 @@ class endgame
     }
 
     #[\mc\route('endgame/new')]
-    public static function newForm() {
+    public static function newForm()
+    {
         if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
-        $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-form.template.php");
-        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
-        return $template->fill(["path" => config::www . "/modules/articles"])->value();
-
+        \config::$logger->warn("not implemented yet");
+        $template = \facade::template("endgame-form.template.php", self::TEMPLATES_DIR);
+        return $template->fill(["path" => \config::www . "/modules/articles"])->value();
     }
 
     #[\mc\route('endgame/create')]
     public static function create(array $params)
     {
         if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
+        \config::$logger->warn("not implemented yet");
         return null;
     }
 
     #[\mc\route('endgame/import')]
-    public static function importForm(array $params) {
+    public static function importForm(array $params)
+    {
         if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
-        $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-import-form.template.php");
-        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+        $template = \facade::template("endgame-import-form.template.php", self::TEMPLATES_DIR);
         return $template->value();
-
     }
 
     #[\mc\route("pgn/upload")]
     public static function upload(array $params)
     {
         if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
-            header("location:" . config::www);
+            header("location:" . \config::www);
             exit();
         }
         if (empty($_FILES["userfile"])) {
-            header("location:" . config::www . "/?q=endgame/import");
+            header("location:" . \config::www . "/?q=endgame/import");
             exit();
         }
         $filename = filter_var($_FILES['userfile']['name']);
-        $parser = new PGNParser(filter_var($_FILES['userfile']['tmp_name']));
-        $db = new database(config::dsn);
+        $parser = new \PGNParser(filter_var($_FILES['userfile']['tmp_name']));
+        $db = \config::$db;
         $endgame_exists = [];
 
         $games = $parser->getGames();
@@ -84,20 +86,21 @@ class endgame
         foreach ($games as $game) {
             $headers = $game->getInfo();
             $test_fen = $db->select(
-                "endgame", 
-                ["pid, fen"], 
-                ["fen LIKE '%{$headers[ChessGame::FEN]}%'"]);
+                "endgame",
+                ["pid, fen"],
+                ["fen LIKE '%{$headers[\ChessGame::FEN]}%'"]
+            );
             if (!empty($test_fen)) {
                 $endgame_exists[] = $test_fen[0];
                 continue;
             }
 
             $data = [
-                \meta\endgame::SOURCE => $headers[ChessGame::EVENT],
-                \meta\endgame::AUTHOR => $headers[ChessGame::WHITE],
-                \meta\endgame::DATE => $headers[ChessGame::DATE],
-                \meta\endgame::STIPULATION => $headers[ChessGame::RESULT],
-                \meta\endgame::FEN => $headers[ChessGame::FEN],
+                \meta\endgame::SOURCE => $headers[\ChessGame::EVENT],
+                \meta\endgame::AUTHOR => $headers[\ChessGame::WHITE],
+                \meta\endgame::DATE => $headers[\ChessGame::DATE],
+                \meta\endgame::STIPULATION => $headers[\ChessGame::RESULT],
+                \meta\endgame::FEN => $headers[\ChessGame::FEN],
                 \meta\endgame::AWARD => "",
                 \meta\endgame::WHITEP => "",
                 \meta\endgame::BLACKP => "",
@@ -106,7 +109,7 @@ class endgame
                 \meta\endgame::PIECE_PATTERN => "",
                 \meta\endgame::THEME => "unknown",
             ];
-            
+
             $db->insert("endgame", $data);
             $db->insert("raw", ["data" => $game->getRaw()]);
         }
@@ -130,14 +133,14 @@ class endgame
     {
         $offset = isset($params[0]) ? (int)$params[0] : 0;
         $limit = isset($params[1]) ? (int)$params[1] : 20;
-        $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), \meta\endgame::__name__);
+        $crud = new \mc\sql\crud(\config::$db, \meta\endgame::__name__);
         return $crud->all($offset, $limit);
     }
 
     #[\mc\route("/")]
-    public static function search_form() {
-        $template = file_get_contents(self::TEMPLATES_DIR . "/endgame-search-form.template.php");
-        $template = new \mc\template($template, ["prefix" => "<!-- ", "suffix" => " -->"]);
+    public static function search_form()
+    {
+        $template = \facade::template("endgame-search-form.template.php", self::TEMPLATES_DIR);
         return $template->fill(["last-date" => date("Y")])->value();
     }
 }

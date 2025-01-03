@@ -1,5 +1,7 @@
 <?php
 
+namespace modules\pdf;
+
 require_once __DIR__ . '/lib/makebook.php';
 
 class pdf
@@ -118,10 +120,10 @@ class pdf
         );
     }
 
-    #[mc\route("pdf/get")]
+    #[\mc\route("pdf/get")]
     public static function get(array $params)
     {
-        $db = new \mc\sql\database(config::dsn);
+        $db = \config::$db;
         $author = self::getAuthor();
         $white_min = self::getWhiteMin();
         $white_max = self::getWhiteMax();
@@ -152,7 +154,7 @@ class pdf
         $result = $db->query_sql($query);
 
         //create a FPDF object
-        $pdf = new MakeBook();
+        $pdf = new \MakeBook();
         //set document properties
         $pdf->SetTopMargin(5);
 
@@ -168,7 +170,7 @@ class pdf
         $pdf->SetColNr(2);
 
         foreach ($result as $key => $value) {
-            $position = new ChessPosition($value[\meta\endgame::FEN], 20, "leipzig");
+            $position = new \ChessPosition($value[\meta\endgame::FEN], 20, "leipzig");
             $position->author = $value[\meta\endgame::AUTHOR];
             $position->stipulation = $value[\meta\endgame::STIPULATION];
             $position->source = $value[\meta\endgame::SOURCE];

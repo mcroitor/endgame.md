@@ -61,7 +61,7 @@ class template
      * Example:
      * <pre>$template->fill($data1)->fill(data2)->value();</pre>
      * @param array $data
-     * @return \template
+     * @return template
      */
     public function fill(array $data): template
     {
@@ -77,7 +77,7 @@ class template
      * Replace single $pattern with $value
      * @param string $pattern
      * @param string $value
-     * @return \template
+     * @return template
      */
     public function fill_value(string $pattern, string $value): template
     {

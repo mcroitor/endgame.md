@@ -2,20 +2,18 @@
 
 include_once __DIR__ . "/../config.php";
 
-$logger = \mc\logger::stderr();
-
 // #[\mc\route("pgn")]
 function get_pgn(array $params)
 {
     $pgnId = empty($params) ? 1 : (int) $params[0];
-    $crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "raw");
+    $crud = new \mc\sql\crud(\config::$db, "raw");
     return $crud->select($pgnId);
 }
 
 #[\mc\route("data")]
 function get_data(array $params)
 {
-    $db = new \mc\sql\database(config::dsn);
+    $db = \config::$db;
 
     $html = [];
 
@@ -95,6 +93,6 @@ function get_data(array $params)
 \mc\router::init();
 
 // process route
-$logger->debug("routes: " . json_encode(\mc\router::getRoutes()), config::debug);
+\config::$logger->debug("routes: " . json_encode(\mc\router::getRoutes()), config::debug);
 echo json_encode(\mc\router::run());
-$logger->debug("route: " . \mc\router::getSelectedRoute(), config::debug);
+\config::$logger->debug("route: " . \mc\router::getSelectedRoute(), config::debug);

@@ -1,6 +1,9 @@
 <?php
 
+namespace modules\attic;
+
 use mc\template;
+use modules\articles\articles;
 
 /**
  * just another type of articles (very specific) for showing
@@ -9,13 +12,13 @@ use mc\template;
 class attic
 {
     /**
-     * @property \mc\sql\crud
+     * @property \mc\sql\crud $crud
      */
     protected static $crud;
 
     public static function init()
     {
-        attic::$crud = new \mc\sql\crud(new \mc\sql\database(config::dsn), "attic");
+        attic::$crud = new \mc\sql\crud(\config::$db, "attic");
     }
 
     public static function get($offset, $limit)

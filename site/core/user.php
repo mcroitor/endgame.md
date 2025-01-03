@@ -133,10 +133,9 @@ class user
             header("location:" . config::www);
             exit();
         }
-        $db = new \mc\sql\database(\config::dsn);
         $login = filter_input(INPUT_POST, "login");
         $password = filter_input(INPUT_POST, "password");
-        $user = $db->select("user", ["id", "name", "role_id"], [
+        $user = config::$db->select("user", ["id", "name", "role_id"], [
             "login" => $login,
             "password" => user::crypt($login, $password)
         ]);
@@ -147,7 +146,7 @@ class user
         $_SESSION["user"]["id"] = $user[0]["id"];
         $_SESSION["user"]["name"] = $user[0]["name"];
         $_SESSION["user"]["role_id"] = $user[0]["role_id"];
-        $_SESSION["user"]["role"] = $db->select_column(
+        $_SESSION["user"]["role"] = config::$db->select_column(
             \meta\role::__name__, 
             \meta\role::NAME, 
             ["id" => $user[0]["role_id"]])[0];
@@ -162,14 +161,14 @@ class user
      */
     private static function load_capabilities(int $roleId) {
         $db = new \mc\sql\database(\config::dsn);
-        $capIds = $db->select_column(
+        $capIds = config::$db->select_column(
             "role_capabilities",
             "capability_id",
             ["role_id" => $roleId]
         );
         $result = [];
         foreach ($capIds as $capId){
-            $result[$capId] = $db->select_column("capabilities", "name", ["id" => $capId])[0];
+            $result[$capId] = config::$db->select_column("capabilities", "name", ["id" => $capId])[0];
         }
         return $result;
     }
@@ -210,9 +209,8 @@ class user
      */
     public static function register(array $data) {
         // TODO: rewrite to POST method
-        $db = new \mc\sql\database(config::dsn);
         $data["password"] = user::crypt($data["login"], $data["password"]);
-        return $db->insert("user", $data);
+        return config::$db->insert("user", $data);
     }
     
     /**
@@ -226,8 +224,7 @@ class user
 
         $userMenu = '<a href="<!-- www -->/?q=user/info" class="menu-title twelve columns menu-item">Hello, ' .
             user::name() . '</a>';
-        $db = new \mc\sql\database(config::dsn);
-        $userMenuLinks = $db->select("user_menu");
+        $userMenuLinks = config::$db->select("user_menu");
 
         foreach($userMenuLinks as $menu) {
             if(user::has_capability($menu["capability_id"])) {

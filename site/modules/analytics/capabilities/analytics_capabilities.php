@@ -1,5 +1,7 @@
 <?php
 
+namespace modules\analytics\capabilities;
+
 class ANALYTICS_CAPABILITY {
     public const CREATE = "analytics::create";
     public const READ = "analytics::read";

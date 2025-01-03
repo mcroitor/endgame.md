@@ -6,32 +6,26 @@ if (!file_exists("config.php")) {
 }
 include_once __DIR__ . "/config.php";
 
-$db = new \mc\sql\database(config::dsn);
-$logger = \mc\logger::stderr();
-
-$template = file_get_contents(config::template_dir . "index.template.php");
+use \modules\articles\articles;
+use \modules\statistics\statistics;
 
 articles::init();
 
 $routes = [
     "links" => function (array $params) {
-        return file_get_contents(config::template_dir . "links.template.php");
+        return facade::file(config::template_dir . "links.template.php");
     }
 ];
 
 // register routes
 \mc\router::init($routes);
 
-$logger->debug("routes: " . json_encode(\mc\router::getRoutes()), config::debug);
-
 $fill = [
-    "<!-- login-form -->" => \mc\user::login_form(),
-    "<!-- user-menu -->" => \mc\user::user_menu(),
-    "<!-- content -->" => \mc\router::run(),
-    "<!-- statistics -->" => statistics::block(),
-    "<!-- www -->" => config::www,
+    "login-form" => \mc\user::login_form(),
+    "user-menu" => \mc\user::user_menu(),
+    "content" => \mc\router::run(),
+    "statistics" => statistics::block(),
+    "www" => \config::www,
 ];
 
-$logger->debug("route: " . \mc\router::getSelectedRoute(), config::debug);
-
-echo (new \mc\template($template))->fill($fill)->value();
+echo facade::template("index.template.php")->fill($fill)->value();
