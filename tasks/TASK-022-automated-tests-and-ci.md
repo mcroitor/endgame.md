@@ -24,5 +24,5 @@ Introduce a lightweight automated test suite covering core PHP components and AP
    - Run the PHPUnit test suite on PHP 8.1+ with `gd` and `pdo_sqlite` extensions enabled.
 
 ## Acceptance Criteria
-- [ ] Running the test suite locally executes unit and API smoke tests cleanly without mutating the production/sample SQLite file.
-- [ ] GitHub Actions CI passes on `main` and fails on PHP syntax errors or test regressions.
+- [x] Running the test suite locally executes unit and API smoke tests cleanly without mutating the production/sample SQLite file.
+- [x] GitHub Actions CI passes on `main` and fails on PHP syntax errors or test regressions.
