@@ -219,8 +219,30 @@ class query {
         if(empty($this->values)){
             return "";
         }
-        // TODO: quote values!
-        return \implode(", ", $this->values);
+        $formatValue = static function ($value): string {
+            if (is_null($value)) {
+                return "null";
+            }
+            if (is_int($value) || is_float($value)) {
+                return (string)$value;
+            }
+            return "'" . str_replace("'", "''", (string)$value) . "'";
+        };
+        $tmp = [];
+        if ($this->type === self::UPDATE) {
+            foreach ($this->values as $key => $value) {
+                if (is_numeric($key)) {
+                    $tmp[] = $value;
+                } else {
+                    $tmp[] = "{$key}=" . $formatValue($value);
+                }
+            }
+        } else {
+            foreach ($this->values as $value) {
+                $tmp[] = $formatValue($value);
+            }
+        }
+        return \implode(", ", $tmp);
     }
 
     /**

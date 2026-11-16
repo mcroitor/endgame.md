@@ -53,7 +53,7 @@ class pdf
             INPUT_GET,
             "wmax",
             FILTER_SANITIZE_NUMBER_INT,
-            ["options" => ["default" => 0]]
+            ["options" => ["default" => 32]]
         );
     }
     private static function getBlackMin()
@@ -71,7 +71,7 @@ class pdf
             INPUT_GET,
             "bmax",
             FILTER_SANITIZE_NUMBER_INT,
-            ["options" => ["default" => 0]]
+            ["options" => ["default" => 32]]
         );
     }
     private static function getPiecesPattern()
@@ -119,21 +119,31 @@ class pdf
             ["options" => ["default" => "2050"]]
         );
     }
+    private static function getCook()
+    {
+        return filter_input(
+            INPUT_GET,
+            "cook",
+            FILTER_DEFAULT,
+            ["options" => ["default" => "all"]]
+        );
+    }
 
     #[\mc\route("pdf/get")]
     public static function get(array $params)
     {
         $db = \config::$db;
-        $author = self::getAuthor();
-        $white_min = self::getWhiteMin();
-        $white_max = self::getWhiteMax();
-        $black_min = self::getBlackMin();
-        $black_max = self::getBlackMax();
-        $piece_pattern = self::getPiecesPattern();
-        $stipulation = self::getStipulation();
-        $theme = self::getTheme();
-        $from_date = self::getFromDate();
-        $to_date = self::getToDate();
+        $escape = static fn($val): string => str_replace("'", "''", (string) $val);
+        $author = $escape(self::getAuthor() ?? "");
+        $white_min = (int) (self::getWhiteMin() ?? 0);
+        $white_max = (int) (self::getWhiteMax() ?? 32);
+        $black_min = (int) (self::getBlackMin() ?? 0);
+        $black_max = (int) (self::getBlackMax() ?? 32);
+        $piece_pattern = (string) (self::getPiecesPattern() ?? "");
+        $stipulation = (string) (self::getStipulation() ?? "-");
+        $theme = (string) (self::getTheme() ?? "-");
+        $from_date = (int) (self::getFromDate() ?? 0);
+        $to_date = (int) (self::getToDate() ?? 2050);
 
         $query = str_replace(
             ["{author}", "{white_min}", "{white_max}", "{black_min}", "{black_max}"],
@@ -141,13 +151,19 @@ class pdf
             self::QUERY
         );
         if ($stipulation !== "-") {
-            $query .= " AND stipulation LIKE '{$stipulation}' ";
+            $query .= " AND stipulation LIKE '" . $escape($stipulation) . "' ";
         }
         if ($theme !== "-") {
-            $query .= " AND theme LIKE '%{$theme}%' ";
+            $query .= " AND theme LIKE '%" . $escape($theme) . "%' ";
         }
-        if ($piece_pattern != "") {
-            $query .= " AND piece_pattern='{$piece_pattern}' ";
+        if ($piece_pattern !== "") {
+            $query .= " AND piece_pattern='" . $escape($piece_pattern) . "' ";
+        }
+        $cook = (string) (self::getCook() ?? "all");
+        if ($cook === "1" || $cook === "true") {
+            $query .= " AND cook=1 ";
+        } elseif ($cook === "0") {
+            $query .= " AND cook=0 ";
         }
 
         $query .= " AND date >= {$from_date} AND date <= {$to_date} ORDER BY date ASC LIMIT 1000";
@@ -175,7 +191,8 @@ class pdf
             $position->stipulation = $value[\meta\endgame::STIPULATION];
             $position->source = $value[\meta\endgame::SOURCE];
             $position->date = explode(".", $value[\meta\endgame::DATE])[0];
-            $pgn = $db->select("raw", ["*"], ["id" => $value[\meta\endgame::PID]])[0]["data"];
+            $rawRows = $db->select("raw", ["*"], ["id" => $value[\meta\endgame::PID]]);
+            $pgn = $rawRows[0]["data"] ?? "";
             $solution = preg_replace('/\[\w+ ".+"\]\s/', "", $pgn);
 
             $position->solution = (new \mc\template($solution))

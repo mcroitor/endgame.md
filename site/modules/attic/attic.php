@@ -30,7 +30,7 @@ class attic
         $offset = isset($params[0])? (int)$params[0] : 0;
         $limit = isset($params[1]) ? (int)$params[1] : 5;
         $template = file_get_contents(__DIR__ . "/attic.template.php");
-        $data = articles::get($offset, $limit);
+        $data = attic::get($offset, $limit);
         $result = "";
         $template = new template($template);
         $template->set_prefix("<!-- ");

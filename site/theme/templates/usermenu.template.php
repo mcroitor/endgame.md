@@ -1,9 +1,11 @@
-<div class="dropdown">
-    <div class="dropdown-title">
-        <img src="<!-- www -->/images/ddmenu.png" alt="" class="icon" />
-    </div>
-    <div class="dropdown-body container">
-        <!-- user-menu -->
-        <a href='<!-- www -->/api/?q=user/logout' id='login-form' class='menu-item twelve columns'>Log Out</a>
+<div class="auth-menu" id="auth-menu">
+    <button type="button" class="auth-toggle" aria-expanded="false" aria-controls="user-dropdown">
+        Account &#9662;
+    </button>
+    <div class="auth-dropdown hidden" id="user-dropdown">
+        <div class="user-menu-list">
+            <!-- user-menu -->
+            <a href="<!-- www -->/api/?q=user/logout" class="menu-item menu-item-logout">Log Out</a>
+        </div>
     </div>
 </div>

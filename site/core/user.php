@@ -98,7 +98,7 @@ class user
      */
     public static function is_authenticated(): bool
     {
-        return user::name() === self::GUEST_NAME;
+        return user::name() !== self::GUEST_NAME;
     }
 
     /**
@@ -133,23 +133,29 @@ class user
             header("location:" . config::www);
             exit();
         }
-        $login = filter_input(INPUT_POST, "login");
-        $password = filter_input(INPUT_POST, "password");
+        $login = filter_input(INPUT_POST, "login") ?? "";
+        $password = filter_input(INPUT_POST, "password") ?? "";
+        if ($login === "" || $password === "") {
+            header("location:" . config::www);
+            exit();
+        }
         $user = config::$db->select("user", ["id", "name", "role_id"], [
             "login" => $login,
             "password" => user::crypt($login, $password)
         ]);
         if (count($user) !== 1) {
             header("location:" . config::www);
-            return;
+            exit();
         }
         $_SESSION["user"]["id"] = $user[0]["id"];
         $_SESSION["user"]["name"] = $user[0]["name"];
         $_SESSION["user"]["role_id"] = $user[0]["role_id"];
-        $_SESSION["user"]["role"] = config::$db->select_column(
-            \meta\role::__name__, 
-            \meta\role::NAME, 
-            ["id" => $user[0]["role_id"]])[0];
+        $roles = config::$db->select_column(
+            \meta\role::__name__,
+            \meta\role::NAME,
+            ["id" => $user[0]["role_id"]]
+        );
+        $_SESSION["user"]["role"] = $roles[0] ?? self::GUEST_ROLE;
         $_SESSION["user"]["capabilities"] = user::load_capabilities($_SESSION["user"]["role_id"]);
         header("location:" . config::www);
     }
@@ -160,15 +166,17 @@ class user
      * @return array
      */
     private static function load_capabilities(int $roleId) {
-        $db = new \mc\sql\database(\config::dsn);
         $capIds = config::$db->select_column(
             "role_capabilities",
             "capability_id",
-            ["role_id" => $roleId]
+            ["role_id" => $roleId, "permission" => 1]
         );
         $result = [];
         foreach ($capIds as $capId){
-            $result[$capId] = config::$db->select_column("capabilities", "name", ["id" => $capId])[0];
+            $capNames = config::$db->select_column("capabilities", "name", ["id" => $capId]);
+            if (!empty($capNames)) {
+                $result[$capId] = $capNames[0];
+            }
         }
         return $result;
     }

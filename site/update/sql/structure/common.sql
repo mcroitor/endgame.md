@@ -27,7 +27,7 @@ CREATE TABLE role_capabilities (
     capability_id INT NOT NULL,
     permission INT NOT NULL DEFAULT 0, -- 0 - deny, 1 - allow
     FOREIGN KEY (role_id) REFERENCES role(id),
-    FOREIGN KEY (capability_id) REFERENCES capability(id)
+    FOREIGN KEY (capability_id) REFERENCES capabilities(id)
 );
 CREATE TABLE user_menu (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -114,6 +114,7 @@ class analytics
                     [\meta\endgame::PID => $endgame[\meta\endgame::PID]]
                 );
                 $stat["removed"]++;
+                continue;
             }
             if ($pattern === $endgame[\meta\endgame::PIECE_PATTERN]) {
                 continue;
@@ -207,9 +208,9 @@ class analytics
             header("location:" . \config::www);
             exit();
         }
-        $action = $params[0];
-        $pid = $params[1] ?? 0;
-        if($pid === 0) {
+        $action = $params[0] ?? "";
+        $pid = isset($params[1]) ? (int)$params[1] : 0;
+        if($pid <= 0) {
             return "Invalid PID";
         }
         switch($action) {

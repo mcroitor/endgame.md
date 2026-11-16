@@ -1,7 +1,7 @@
 <?php
 
 $fen = filter_input(INPUT_GET, "fen");
-if ($fen === false) {
+if (empty($fen)) {
     exit("<b>using</b>:<br />index.php?fen=&lt;FEN&gt;");
 }
 
@@ -18,6 +18,6 @@ require __DIR__ . '/diagram.class.php';
 
 $d = new Diagram($fen, $options);
 
-// header('Content-type: image/png');
+header('Content-type: image/png');
 imagepng($d->toImage());
 

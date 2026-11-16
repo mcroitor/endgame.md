@@ -20,7 +20,7 @@ class Pgn {
         self::BLACK => "/\[Black \"(.*?)\"\]/",
         self::RESULT => "/\[Result \"(.*?)\"\]/",
         self::FEN => "/\[FEN \"(.*?)\"\]/",
-        self::MOVES => "/\[(.*?)\]/",
+        self::MOVES => "/\r?\n\r?\n(.*)$/s",
     ];
 
 
@@ -51,8 +51,9 @@ class Pgn {
     public function parse(string $game) {
         $matches = [];
         foreach (self::PATTERNS as $key => $pattern) {
-            preg_match($pattern, $game, $matches);
-            $this->$key = $matches[1];
+            if (preg_match($pattern, $game, $matches)) {
+                $this->$key = trim($matches[1]);
+            }
         }
     }
 

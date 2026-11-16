@@ -191,8 +191,12 @@ class database
     {
         $tmp2 = [];
         foreach ($values as $key => $value) {
-            $value = $this->pdo->quote($value);
-            $tmp2[] = "{$key}={$value}";
+            if (is_null($value)) {
+                $tmp2[] = "{$key}=null";
+            } else {
+                $value = $this->pdo->quote($value);
+                $tmp2[] = "{$key}={$value}";
+            }
         }
 
         $query = "UPDATE {$table} SET " . \implode(", ", $tmp2) . " WHERE " . implode(" AND ", $this->parse_where($conditions));

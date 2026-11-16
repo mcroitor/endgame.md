@@ -2,7 +2,7 @@
 
 include_once __DIR__ . "/../config.php";
 
-// #[\mc\route("pgn")]
+#[\mc\route("pgn")]
 function get_pgn(array $params)
 {
     $pgnId = empty($params) ? 1 : (int) $params[0];
@@ -20,12 +20,22 @@ function get_data(array $params)
     $data = file_get_contents("php://input");
 
     $request = json_decode($data);
-    $request->author = translitIt($request->author);
+    if (!$request) {
+        return ["html" => [], "stat" => 0];
+    }
 
-    $request->fromDate = empty($request->fromDate) ? "0000" : $request->fromDate;
-    $request->toDate = empty($request->toDate) ? "2050" : $request->toDate;
+    $escape = static fn($val): string => str_replace("'", "''", (string) $val);
 
-    $page = 12 * $request->page;
+    $author = $escape(translitIt((string) ($request->author ?? "")));
+    $wmin = (int) ($request->wmin ?? 0);
+    $wmax = (int) ($request->wmax ?? 32);
+    $bmin = (int) ($request->bmin ?? 0);
+    $bmax = (int) ($request->bmax ?? 32);
+
+    $fromDate = (int) (!empty($request->from_date) ? $request->from_date : (!empty($request->fromDate) ? $request->fromDate : 0));
+    $toDate = (int) (!empty($request->to_date) ? $request->to_date : (!empty($request->toDate) ? $request->toDate : 2050));
+
+    $page = 12 * (int) ($request->page ?? 0);
     if ($page < 0) {
         $page = 0;
     }
@@ -35,25 +45,41 @@ function get_data(array $params)
         \mc\sql\query::TABLE => "endgame",
         \mc\sql\query::FIELDS => ["*"],
         \mc\sql\query::WHERE => [
-            "author LIKE '%{$request->author}%'",
-            "whitep BETWEEN {$request->wmin} and {$request->wmax}",
-            "blackp BETWEEN {$request->bmin} and {$request->bmax}",
-            "date BETWEEN {$request->fromDate} and {$request->toDate}",
+            "author LIKE '%{$author}%'",
+            "whitep BETWEEN {$wmin} and {$wmax}",
+            "blackp BETWEEN {$bmin} and {$bmax}",
+            "date BETWEEN {$fromDate} and {$toDate}",
         ],
     ];
 
-    if ($request->stipulation !== "-") {
-        $query_config[\mc\sql\query::WHERE][] = "stipulation LIKE '{$request->stipulation}'";
+    $stipulation = (string) ($request->stipulation ?? "-");
+    if ($stipulation !== "-") {
+        $query_config[\mc\sql\query::WHERE][] = "stipulation LIKE '" . $escape($stipulation) . "'";
     }
-    if ($request->theme !== "-") {
-        $query_config[\mc\sql\query::WHERE][] = "theme LIKE '%{$request->theme}%'";
+    $theme = (string) ($request->theme ?? "-");
+    if ($theme !== "-") {
+        $query_config[\mc\sql\query::WHERE][] = "theme LIKE '%" . $escape($theme) . "%'";
     }
-    if ($request->piece_pattern != "") {
-        $query_config[\mc\sql\query::WHERE][] = "piece_pattern='{$request->piece_pattern}'";
+    $piecePattern = (string) ($request->piece_pattern ?? "");
+    if ($piecePattern !== "") {
+        $query_config[\mc\sql\query::WHERE][] = "piece_pattern='" . $escape($piecePattern) . "'";
     }
-    if (!empty($request->cook)) {
+    $cook = $request->cook ?? "all";
+    if ($cook === true || $cook === "1" || $cook === 1) {
         $query_config[\mc\sql\query::WHERE][] = "cook=1";
+    } elseif ($cook === "0" || $cook === 0) {
+        $query_config[\mc\sql\query::WHERE][] = "cook=0";
     }
+
+    $sortMap = [
+        "pid_asc" => ["pid" => "ASC"],
+        "date_asc" => ["date" => "ASC", "pid" => "ASC"],
+        "date_desc" => ["date" => "DESC", "pid" => "ASC"],
+        "author_asc" => ["author" => "ASC", "pid" => "ASC"],
+        "pieces_asc" => ["(whitep + blackp)" => "ASC", "pid" => "ASC"],
+    ];
+    $sortKey = (string) ($request->sort ?? "pid_asc");
+    $query_config[\mc\sql\query::ORDER] = $sortMap[$sortKey] ?? $sortMap["pid_asc"];
 
     $query = new \mc\sql\query($query_config);
 
@@ -67,7 +93,7 @@ function get_data(array $params)
     $logData = [
         \meta\statistic::QUERY => $query->build(),
         \meta\statistic::TIME => time(),
-        \meta\statistic::IP => $_SERVER['REMOTE_ADDR']
+        \meta\statistic::IP => $_SERVER['REMOTE_ADDR'] ?? ''
     ];
     $dblogger->write($logData);
     //end logging

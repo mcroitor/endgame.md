@@ -58,15 +58,21 @@ class articles
             exit();
         }
 
+        $title = trim((string) (filter_input(INPUT_POST, "article-title") ?? ""));
+        $body = trim((string) (filter_input(INPUT_POST, "article-body") ?? ""));
+        if ($title === "" || $body === "") {
+            header("location:" . \config::www . "/?q=article/new");
+            exit();
+        }
         $data = [
             \meta\article::AUTHOR => \mc\user::id(),
-            \meta\article::TITLE => filter_input(INPUT_POST, "article-title"),
-            \meta\article::BODY => filter_input(INPUT_POST, "article-body"),
+            \meta\article::TITLE => $title,
+            \meta\article::BODY => $body,
             \meta\article::PUBLISHED => date("Y-m-d H:i:s"),
         ];
         self::$crud->insert($data);
         header("location:" . \config::www . "/?q=about");
-        return "";
+        exit();
     }
 
 }

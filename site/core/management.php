@@ -83,7 +83,7 @@ class management
 
     public static function uninstallModule($module)
     {
-        $crud = new \mc\sql\crud(\config::$db, \meta\modules::__name__);
+        $crud = new \mc\sql\crud(\config::$db, \meta\modules::__name__, \meta\modules::NAME);
         $crud->delete($module);
         if (file_exists(config::modules_dir . "{$module}/install")) {
             include config::modules_dir . "{$module}/install/uninstall.php";
@@ -108,21 +108,26 @@ class management
             return "";
         }
         $template = new \mc\template(
-            file_get_contents(config::template_dir . "manageoption.template.php")
+            file_get_contents(config::template_dir . "manageoption.template.php"),
+            [
+                "prefix" => "<!-- ",
+                "suffix" => " -->"
+            ]
         );
         $html = "<table class='u-full-width'>";
         $html .= "<tr><th>Username</th><th>Role</th><th>Action</th></tr>";
 
         $users = \config::$db->select(\meta\user::__name__, ["*"]);
         foreach ($users as $user) {
-            $role = \config::$db->select(
+            $roles = \config::$db->select(
                 \meta\role::__name__,
                 [\meta\role::NAME],
                 ["id" => $user[\meta\user::ROLE_ID]]
-            )[0][\meta\role::NAME];
+            );
+            $role = $roles[0][\meta\role::NAME] ?? "unknown";
             $html .= "<tr><td>{$user[\meta\user::LOGIN]}</td>" .
                 "<td>{$role}</td>" .
-                "<td><a href='/?q=user/edit/{$user[\meta\user::ID]}'>Edit</a></td></tr>";
+                "<td><a href='<!-- www -->/?q=user/edit/{$user[\meta\user::ID]}'>Edit</a></td></tr>";
         }
         $html .= "</table>";
         $data = [

@@ -87,15 +87,14 @@ class crud
     {
         /// no key - insert object
         if (empty($data[$this->_key])) {
-            $this->insert($data);
+            return $this->insert($data);
         }
 
         $key = $data[$this->_key];
-        echo "[debug] key found " . $key . PHP_EOL;
         $result = $this->select($key);
         /// object not found, insert object
         if (empty($result)) {
-            $this->insert($data);
+            return $this->insert($data);
         }
 
         /// update object

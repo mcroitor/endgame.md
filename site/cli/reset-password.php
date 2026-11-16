@@ -39,6 +39,6 @@ $user = $users[0];
 
 $user[\meta\user::PASSWORD] = \mc\user::crypt($login, $password);
 
-$db->update(\meta\user::__name__, $user, ["id" => $user[\meta\user::ID]]);
+\config::$db->update(\meta\user::__name__, $user, ["id" => $user[\meta\user::ID]]);
 
 echo new clitext("Password reset successfully!", clitext::TXT_GREEN, clitext::BG_BRIGHT_WHITE);

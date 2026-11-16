@@ -40,10 +40,10 @@ class statistics {
     public static function block() {
         $template = new template(file_get_contents(__DIR__ . "/statistics.template.php"));
         $data = [
-            "<!-- endgames -->" => statistics::endgames(),
-            "<!-- authors -->" => statistics::authors(),
-            "<!-- queries -->" => statistics::queries(),
-            "<!-- users -->" => statistics::users(),
+            "<!-- endgames -->" => number_format((int) statistics::endgames(), 0, ".", " "),
+            "<!-- authors -->" => number_format((int) statistics::authors(), 0, ".", " "),
+            "<!-- queries -->" => number_format((int) statistics::queries(), 0, ".", " "),
+            "<!-- users -->" => number_format((int) statistics::users(), 0, ".", " "),
         ];
 
         return $template->fill($data)->value();

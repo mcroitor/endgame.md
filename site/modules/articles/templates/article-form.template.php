@@ -9,7 +9,7 @@
             <textarea name="article-body" id="article-body" class="u-full-width"></textarea>
         </div>
         <div class="twelve columns">
-            <input type="submit" value="submit" class="button-primary" />
+            <input type="submit" value="Submit" class="button-primary" />
         </div>
     </div>
 </form>

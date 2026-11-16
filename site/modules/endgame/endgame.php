@@ -23,9 +23,9 @@ class endgame
             header("location:" . \config::www);
             exit();
         }
-        header('Content-Type: text/txt');
+        header('Content-Type: text/plain');
         header("Content-Disposition: attachment; filename=endgame_{$pgnId}.pgn");
-        echo json_encode($pgn);
+        echo $pgn["data"] ?? "";
         exit();
     }
 
@@ -85,14 +85,38 @@ class endgame
 
         foreach ($games as $game) {
             $headers = $game->getInfo();
+            $fenEscaped = str_replace("'", "''", $headers[\ChessGame::FEN]);
             $test_fen = $db->select(
                 "endgame",
                 ["pid, fen"],
-                ["fen LIKE '%{$headers[\ChessGame::FEN]}%'"]
+                ["fen LIKE '%{$fenEscaped}%'"]
             );
             if (!empty($test_fen)) {
                 $endgame_exists[] = $test_fen[0];
                 continue;
+            }
+
+            $epd = explode(" ", $headers[\ChessGame::FEN])[0] ?? "";
+            $whitePieces = 0;
+            $blackPieces = 0;
+            $pieceStat = [
+                "Q" => 0, "R" => 0, "B" => 0, "N" => 0, "P" => 0,
+                "q" => 0, "r" => 0, "b" => 0, "n" => 0, "p" => 0,
+            ];
+            for ($i = 0; $i < strlen($epd); $i++) {
+                $ch = $epd[$i];
+                if (str_contains("KQRBNP", $ch)) {
+                    $whitePieces++;
+                } elseif (str_contains("kqrbnp", $ch)) {
+                    $blackPieces++;
+                }
+                if (isset($pieceStat[$ch])) {
+                    $pieceStat[$ch]++;
+                }
+            }
+            $piecePattern = "";
+            foreach ($pieceStat as $piece => $count) {
+                $piecePattern .= str_repeat($piece, $count);
             }
 
             $data = [
@@ -102,16 +126,16 @@ class endgame
                 \meta\endgame::STIPULATION => $headers[\ChessGame::RESULT],
                 \meta\endgame::FEN => $headers[\ChessGame::FEN],
                 \meta\endgame::AWARD => "",
-                \meta\endgame::WHITEP => "",
-                \meta\endgame::BLACKP => "",
+                \meta\endgame::WHITEP => $whitePieces,
+                \meta\endgame::BLACKP => $blackPieces,
                 \meta\endgame::COMMENTARY => "",
-                \meta\endgame::COOK => "",
-                \meta\endgame::PIECE_PATTERN => "",
+                \meta\endgame::COOK => 0,
+                \meta\endgame::PIECE_PATTERN => $piecePattern,
                 \meta\endgame::THEME => "unknown",
             ];
 
-            $db->insert("endgame", $data);
-            $db->insert("raw", ["data" => $game->getRaw()]);
+            $pid = $db->insert("endgame", $data);
+            $db->insert("raw", ["id" => $pid, "data" => $game->getRaw()]);
         }
         $db->insert("changes", [
             "nr_games" => count($parser->getGames()) - count($endgame_exists),
@@ -141,6 +165,18 @@ class endgame
     public static function search_form()
     {
         $template = \facade::template("endgame-search-form.template.php", self::TEMPLATES_DIR);
-        return $template->fill(["last-date" => date("Y")])->value();
+        $themesHtml = "<option value='-'>Any theme</option>";
+        $themes = \config::$db->unique_values(\meta\endgame::__name__, \meta\endgame::THEME);
+        foreach ($themes as $row) {
+            $theme = $row[\meta\endgame::THEME] ?? "";
+            if ($theme !== "" && $theme !== "-") {
+                $escaped = htmlspecialchars($theme, ENT_QUOTES, "UTF-8");
+                $themesHtml .= "<option value='{$escaped}'>{$escaped}</option>";
+            }
+        }
+        return $template->fill([
+            "last-date" => date("Y"),
+            "themes" => $themesHtml,
+        ])->value();
     }
 }

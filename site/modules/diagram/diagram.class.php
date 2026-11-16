@@ -126,7 +126,7 @@ class Board {
         $epd = $parts[0];
 
         // fen string verifying
-        if ($this->is_correct_epd($epd) === true) {
+        if ($this->is_correct_epd($epd) === false) {
             $epd = "8/8/8/8/8/8/8/8";
         }
         $brd = [];
@@ -168,18 +168,27 @@ class Board {
      * @return bool
      */
     private function is_correct_epd($epd) {
-        $len = strlen($epd);
+        $ranks = explode("/", $epd);
+        if (count($ranks) !== 8) {
+            return false;
+        }
         $fields = 0;
-        for ($i = 0; $i < $len; $i++) {
-            if (strpos("12345678", $epd[$i]) === true) {
-                $fields += $epd[$i];
-            } elseif (strpos("kqrbnpKQRBNPX", $epd[$i]) === true) {
-                $fields++;
-            } elseif ($epd[$i] === '/') {
-                
-            } else {
-                $fields += 100;
+        foreach ($ranks as $rank) {
+            $rankFields = 0;
+            $len = strlen($rank);
+            for ($i = 0; $i < $len; $i++) {
+                if (strpos("12345678", $rank[$i]) !== false) {
+                    $rankFields += (int) $rank[$i];
+                } elseif (strpos("kqrbnpKQRBNPX", $rank[$i]) !== false) {
+                    $rankFields++;
+                } else {
+                    return false;
+                }
             }
+            if ($rankFields !== 8) {
+                return false;
+            }
+            $fields += $rankFields;
         }
         return $fields === 64;
     }
@@ -288,6 +297,11 @@ class Diagram {
         $this->color = empty($options["color"]) ? "black" : $options["color"];
         $this->solid = empty($options["solid"]) ? false : $options["solid"];
         $this->dbl_margin = empty($options["dbl_margin"]) ? false : $options["dbl_margin"];
+
+        global $colors;
+        if (!isset($colors[$this->color]) || !isset($colors[$this->color . "shift"])) {
+            $this->color = "black";
+        }
 
         $this->s = 8 * $this->size;
         $this->b = (int) ($this->size / 40) + 1;

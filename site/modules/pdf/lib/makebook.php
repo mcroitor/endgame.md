@@ -99,7 +99,7 @@ class MakeBook extends ExtFPDF {
             if ($i == 0 && $j == 0) {
                 $this->AddPage();
             }
-            $position->fontsize = mm2px($dgSize / 8 - 2);
+            $position->fontSize = mm2px($dgSize / 8 - 2);
             $this->DrawDiagram($position, 20 + $j * $sizeX, 10 + $i * $sizeY);
             $this->SetXY(20 + $j * $sizeX, 20 + $i * $sizeY);
             $this->Write(5, $key + 1);
