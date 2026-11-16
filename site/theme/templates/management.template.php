@@ -32,4 +32,12 @@
             <p>Here you can manage your roles.</p>
         </div>
     </div>
+    <div class="row">
+        <div class="four columns">
+            <a href="<!-- www -->/?q=analytics/links" class="button u-full-width">Analytics</a>
+        </div>
+        <div class="eight columns">
+            <p>Database analytics, broken authors, and data fixes.</p>
+        </div>
+    </div>
 </div>

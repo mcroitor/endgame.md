@@ -2,6 +2,11 @@
 
 date_default_timezone_set("Europe/Chisinau");
 
+define("APP_WWW", getenv("APP_WWW") ?: "http://localhost/");
+define("APP_DBNAME", getenv("APP_DBNAME") ?: "endgame.20220115.sqlite");
+define("APP_DSN", getenv("APP_DSN") ?: ("sqlite:" . "/database/" . APP_DBNAME));
+define("APP_DEBUG", filter_var(getenv("APP_DEBUG") !== false ? getenv("APP_DEBUG") : "true", FILTER_VALIDATE_BOOLEAN));
+
 /**
  * common configuration class defines site structure and loads dependencies.
  */
@@ -13,7 +18,7 @@ class config {
  * This constant is used for correct redirections. If you want to place
  * database in the Internet, please edit value of this constant.
  */
-    public const www = "http://localhost/";
+    public const www = APP_WWW;
 
 /**
  * defines path to the core.
@@ -26,14 +31,14 @@ class config {
     public const modules_dir = self::root_dir . "modules" . DIRECTORY_SEPARATOR;
     public const theme_dir = self::root_dir . "theme" . DIRECTORY_SEPARATOR;
     public const template_dir = self::theme_dir . "templates" . DIRECTORY_SEPARATOR;
-    public const dbname = "endgame.20220115.sqlite";
-    public const debug = true;
+    public const dbname = APP_DBNAME;
+    public const debug = APP_DEBUG;
 
 /**
  * dsn for database connection. At the moment sqlite database is used, but
  * MySQL is possible.
  */
-    public const dsn = "sqlite:" . "/database/" . self::dbname;
+    public const dsn = APP_DSN;
 
 /**
  * core files enumeration.

@@ -4,6 +4,7 @@
     </button>
     <div class="auth-dropdown hidden" id="auth-dropdown">
         <form method="POST" action="<!-- www -->/api/?q=user/login" id="login-form">
+            <!-- csrf-input -->
             <label for="login" class="sr-only">Login</label>
             <input type="text" id="login" name="login" class="u-full-width" autocomplete="username" placeholder="Login" required />
             <label for="password" class="sr-only">Password</label>

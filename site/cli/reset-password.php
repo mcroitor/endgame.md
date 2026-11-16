@@ -37,7 +37,7 @@ if(empty($users)) {
 
 $user = $users[0];
 
-$user[\meta\user::PASSWORD] = \mc\user::crypt($login, $password);
+$user[\meta\user::PASSWORD] = \mc\user::hash_password($password);
 
 \config::$db->update(\meta\user::__name__, $user, ["id" => $user[\meta\user::ID]]);
 

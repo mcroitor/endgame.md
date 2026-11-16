@@ -1,4 +1,5 @@
 <form method="post" action="<!-- www -->/?q=endgame/create" class="endgame-create-form">
+    <!-- csrf-input -->
     <div class="row">
         <div class="twelve columns">
             <label for="fen">FEN</label>

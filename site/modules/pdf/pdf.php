@@ -6,13 +6,6 @@ require_once __DIR__ . '/lib/makebook.php';
 
 class pdf
 {
-
-    private const QUERY = <<<SQL
-        SELECT * FROM endgame WHERE author LIKE '%{author}%'
-        AND whitep >= {white_min} AND whitep <= {white_max} 
-        AND blackp >= {black_min} AND blackp <= {black_max}
-    SQL;
-
     private const RULE = [
         "{" => "<div class='commentary'>{",
         "}" => "}</div>",
@@ -133,8 +126,7 @@ class pdf
     public static function get(array $params)
     {
         $db = \config::$db;
-        $escape = static fn($val): string => str_replace("'", "''", (string) $val);
-        $author = $escape(self::getAuthor() ?? "");
+        $author = (string) (self::getAuthor() ?? "");
         $white_min = (int) (self::getWhiteMin() ?? 0);
         $white_max = (int) (self::getWhiteMax() ?? 32);
         $black_min = (int) (self::getBlackMin() ?? 0);
@@ -145,29 +137,43 @@ class pdf
         $from_date = (int) (self::getFromDate() ?? 0);
         $to_date = (int) (self::getToDate() ?? 2050);
 
-        $query = str_replace(
-            ["{author}", "{white_min}", "{white_max}", "{black_min}", "{black_max}"],
-            [$author, $white_min, $white_max, $black_min, $black_max],
-            self::QUERY
-        );
+        $where = [
+            "author LIKE ?",
+            "whitep >= ? AND whitep <= ?",
+            "blackp >= ? AND blackp <= ?",
+            "date >= ? AND date <= ?",
+        ];
+        $queryParams = [
+            "%{$author}%",
+            $white_min,
+            $white_max,
+            $black_min,
+            $black_max,
+            $from_date,
+            $to_date,
+        ];
+
         if ($stipulation !== "-") {
-            $query .= " AND stipulation LIKE '" . $escape($stipulation) . "' ";
+            $where[] = "stipulation LIKE ?";
+            $queryParams[] = $stipulation;
         }
         if ($theme !== "-") {
-            $query .= " AND theme LIKE '%" . $escape($theme) . "%' ";
+            $where[] = "theme LIKE ?";
+            $queryParams[] = "%{$theme}%";
         }
         if ($piece_pattern !== "") {
-            $query .= " AND piece_pattern='" . $escape($piece_pattern) . "' ";
+            $where[] = "piece_pattern = ?";
+            $queryParams[] = $piece_pattern;
         }
         $cook = (string) (self::getCook() ?? "all");
         if ($cook === "1" || $cook === "true") {
-            $query .= " AND cook=1 ";
+            $where[] = "cook = 1";
         } elseif ($cook === "0") {
-            $query .= " AND cook=0 ";
+            $where[] = "cook = 0";
         }
 
-        $query .= " AND date >= {$from_date} AND date <= {$to_date} ORDER BY date ASC LIMIT 1000";
-        $result = $db->query_sql($query);
+        $sql = "SELECT * FROM endgame WHERE " . implode(" AND ", $where) . " ORDER BY date ASC LIMIT 1000";
+        $result = $db->exec_prepared($sql, $queryParams);
 
         //create a FPDF object
         $pdf = new \MakeBook();

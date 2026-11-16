@@ -163,6 +163,14 @@ class analytics
     #[\mc\route("analytics/fix")]
     public static function fix(array $params)
     {
+        if (
+            !user::has_capability(ANALYTICS_CAPABILITY::UPDATE)
+            && !user::has_capability(ENDGAME_CAPABILITIY::UPDATE)
+            && !user::has_role("admin")
+        ) {
+            header("location:" . \config::www);
+            exit();
+        }
         $fixResult = self::fixResults();
         // $authors = self::detectAuthors();
         $fixPatterns = self::fixPiecePatterns();
@@ -180,7 +188,11 @@ class analytics
     #[\mc\route("analytics/authors")]
     public static function authors(array $params)
     {
-        if(!user::has_capability(ENDGAME_CAPABILITIY::UPDATE)) {
+        if (
+            !user::has_capability(ANALYTICS_CAPABILITY::UPDATE)
+            && !user::has_capability(ENDGAME_CAPABILITIY::UPDATE)
+            && !user::has_role("admin")
+        ) {
             header("location:" . \config::www);
             exit();
         }
@@ -204,7 +216,11 @@ class analytics
     #[\mc\route("analytics/author")]
     public static function author(array $params)
     {
-        if(!user::has_capability(ENDGAME_CAPABILITIY::UPDATE)) {
+        if (
+            !user::has_capability(ANALYTICS_CAPABILITY::UPDATE)
+            && !user::has_capability(ENDGAME_CAPABILITIY::UPDATE)
+            && !user::has_role("admin")
+        ) {
             header("location:" . \config::www);
             exit();
         }
@@ -237,11 +253,14 @@ class analytics
             return "Endgame not found";
         }
         $endgame = $endgame[0];
+        $fenEncoded = urlencode((string) $endgame[\meta\endgame::FEN]);
+        $authorEscaped = htmlspecialchars((string) $endgame[\meta\endgame::AUTHOR], ENT_QUOTES, "UTF-8");
         $html = "<h3>Edit author</h3>";
-        $html .= "<img src='<!-- www -->/modules/diagram/?fen={$endgame[\meta\endgame::FEN]}&size=32'>";
+        $html .= "<img src='<!-- www -->/modules/diagram/?fen={$fenEncoded}&size=32' alt='Endgame diagram'>";
         $html .= "<form method='post' action='<!-- www -->/?q=analytics/author/update/{$pid}'>";
+        $html .= "<!-- csrf-input -->";
         $html .= "<label for='author'>Author</label>";
-        $html .= "<input type='text' name='author' value='" . $endgame[\meta\endgame::AUTHOR] . "'>";
+        $html .= "<input type='text' id='author' name='author' value='{$authorEscaped}'>";
         $html .= "<input type='submit' value='Save'>";
         $html .= "</form>";
         return $html;
@@ -259,6 +278,7 @@ class analytics
 
     private static function updateAuthor($pid)
     {
+        user::require_csrf();
         $author = filter_input(
             INPUT_POST, 
             "author", 
@@ -287,6 +307,14 @@ class analytics
     #[\mc\route("analytics/links")]
     public static function links(array $params)
     {
+        if (
+            !user::has_capability(ANALYTICS_CAPABILITY::READ)
+            && !user::has_capability(ENDGAME_CAPABILITIY::UPDATE)
+            && !user::has_role("admin")
+        ) {
+            header("location:" . \config::www);
+            exit();
+        }
         $html = "<h3>Analytics links</h3>";
         $links = \mc\router::getRoutes();
         $links = array_filter($links, function($link) {
@@ -296,7 +324,7 @@ class analytics
         foreach ($links as $link) {
             $html .= "<li><a href='<!-- www -->/?q={$link}'>{$link}</a></li>";
         }
-        $html .= "</div></div></ul>";
+        $html .= "</ul></div></div>";
         return $html;
     }
 }

@@ -19,6 +19,10 @@ services:
     build: 
       context: .
       dockerfile: ./docker/php-fpm/Dockerfile
+    environment:
+      APP_WWW: ${APP_WWW:-http://localhost/}
+      APP_DBNAME: ${APP_DBNAME:-endgame.20220115.sqlite}
+      APP_DEBUG: ${APP_DEBUG:-true}
     volumes:
       - ./docker/php-fpm/php-additional.ini:/usr/local/etc/php/conf.d/php-additional.ini
       - site:/var/www/html

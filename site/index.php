@@ -26,6 +26,7 @@ $fill = [
     "content" => \mc\router::run(),
     "statistics" => statistics::block(),
     "www" => \config::www,
+    "csrf-input" => \mc\user::csrf_field(),
 ];
 
 echo facade::template("index.template.php")->fill($fill)->value();

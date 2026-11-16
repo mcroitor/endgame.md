@@ -44,6 +44,7 @@
             <div id="pgnlive-meta" class="pgnlive-meta hidden"></div>
             <div id="pgnlive"></div>
             <div id="pgnlive-actions" class="pgnlive-actions hidden"></div>
+            <div id="pgnlive-syzygy" class="pgnlive-syzygy hidden"></div>
         </div>
     </div>
     <footer class="container footer">
