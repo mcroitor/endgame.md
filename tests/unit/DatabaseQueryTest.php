@@ -50,4 +50,47 @@ final class DatabaseQueryTest extends TestCase
         $crud->delete(1);
         $this->assertFalse($db->exists('items', ['id' => 1]));
     }
+
+    public function testCrudInsertOrUpdateHandlesInsertAndUpdateWithoutDuplicates(): void
+    {
+        $db = new database('sqlite::memory:');
+        $db->query_sql(
+            'CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)',
+            'Error: ',
+            false
+        );
+        $crud = new crud($db, 'items');
+
+        // Insert without key
+        $crud->insert_or_update(['name' => 'First']);
+        $this->assertCount(1, $crud->all(0, 10));
+
+        // Insert with non-existing explicit key
+        $crud->insert_or_update(['id' => 5, 'name' => 'Fifth']);
+        $this->assertSame('Fifth', $crud->select(5)['name']);
+
+        // Update existing key
+        $crud->insert_or_update(['id' => 5, 'name' => 'Updated Fifth']);
+        $this->assertSame('Updated Fifth', $crud->select(5)['name']);
+        $this->assertCount(2, $crud->all(0, 10));
+    }
+
+    public function testSelectColumnAndUniqueValues(): void
+    {
+        $db = new database('sqlite::memory:');
+        $db->query_sql(
+            'CREATE TABLE tags (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT)',
+            'Error: ',
+            false
+        );
+        $db->insert('tags', ['category' => 'Mate']);
+        $db->insert('tags', ['category' => 'Stalemate']);
+        $db->insert('tags', ['category' => 'Mate']);
+
+        $cols = $db->select_column('tags', 'category');
+        $this->assertSame(['Mate', 'Stalemate', 'Mate'], $cols);
+
+        $unique = $db->unique_values('tags', 'category');
+        $this->assertCount(2, $unique);
+    }
 }

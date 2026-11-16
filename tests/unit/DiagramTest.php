@@ -45,4 +45,25 @@ final class DiagramTest extends TestCase
         $image = $diagram->toImage();
         $this->assertInstanceOf(GdImage::class, $image);
     }
+
+    public function testRankWithMoreThanEightSquaresFallsBackToEmptyBoard(): void
+    {
+        $board = new Board('9/8/8/8/8/8/8/8');
+        $grid = $board->board;
+        $this->assertSame(array_fill(0, 8, ' '), $grid[0]);
+    }
+
+    public function testSevenRanksFallsBackToEmptyBoard(): void
+    {
+        $board = new Board('8/8/8/8/8/8/8');
+        $grid = $board->board;
+        $this->assertCount(8, $grid);
+        $this->assertSame(array_fill(0, 8, ' '), $grid[7]);
+    }
+
+    public function testAllowsCrossMarkerXInFen(): void
+    {
+        $board = new Board('8/8/8/8/3X4/8/8/8');
+        $this->assertSame('X', $board->board[4][3]);
+    }
 }
