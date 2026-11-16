@@ -14,7 +14,13 @@ class user
      */
     public static function init()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($_SESSION["csrf_token"])) {
+            $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+        }
 
         if (empty($_SESSION["user"])) {
             $_SESSION["user"] = [
@@ -25,6 +31,32 @@ class user
             ];
         }
         user::repair();
+    }
+
+    public static function csrf_token(): string
+    {
+        return $_SESSION["csrf_token"] ?? "";
+    }
+
+    public static function csrf_field(): string
+    {
+        $token = htmlspecialchars(self::csrf_token(), ENT_QUOTES, "UTF-8");
+        return "<input type=\"hidden\" name=\"csrf_token\" value=\"{$token}\" />";
+    }
+
+    public static function verify_csrf(?string $token = null): bool
+    {
+        $submitted = $token ?? (filter_input(INPUT_POST, "csrf_token") ?? "");
+        $expected = self::csrf_token();
+        return $expected !== "" && is_string($submitted) && hash_equals($expected, $submitted);
+    }
+
+    public static function require_csrf(): void
+    {
+        if (!self::verify_csrf()) {
+            http_response_code(403);
+            exit("Invalid CSRF token");
+        }
     }
 
     /**
@@ -129,6 +161,7 @@ class user
     #[route("user/login")]
     public static function login()
     {
+        self::require_csrf();
         if(user::has_capability("user::authenticate") === false) {
             header("location:" . config::www);
             exit();
@@ -139,14 +172,34 @@ class user
             header("location:" . config::www);
             exit();
         }
-        $user = config::$db->select("user", ["id", "name", "role_id"], [
+        $user = config::$db->select("user", ["id", "name", "password", "role_id"], [
             "login" => $login,
-            "password" => user::crypt($login, $password)
         ]);
         if (count($user) !== 1) {
             header("location:" . config::www);
             exit();
         }
+
+        $storedHash = (string) ($user[0]["password"] ?? "");
+        $isModernValid = password_verify($password, $storedHash);
+        $isLegacyValid = !$isModernValid && hash_equals(user::crypt($login, $password), $storedHash);
+        if (!$isModernValid && !$isLegacyValid) {
+            header("location:" . config::www);
+            exit();
+        }
+
+        if ($isLegacyValid || password_needs_rehash($storedHash, PASSWORD_DEFAULT)) {
+            config::$db->update(
+                "user",
+                ["password" => user::hash_password($password)],
+                ["id" => $user[0]["id"]]
+            );
+        }
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         $_SESSION["user"]["id"] = $user[0]["id"];
         $_SESSION["user"]["name"] = $user[0]["name"];
         $_SESSION["user"]["role_id"] = $user[0]["role_id"];
@@ -158,6 +211,7 @@ class user
         $_SESSION["user"]["role"] = $roles[0] ?? self::GUEST_ROLE;
         $_SESSION["user"]["capabilities"] = user::load_capabilities($_SESSION["user"]["role_id"]);
         header("location:" . config::www);
+        exit();
     }
 
     /**
@@ -205,7 +259,14 @@ class user
     }
 
     /**
-     * crypt password
+     * hash password using modern PASSWORD_DEFAULT algorithm
+     */
+    public static function hash_password(string $password): string {
+        return password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * legacy crypt password (kept for backward-compatible verification)
      */
     public static function crypt(string $login, string $password) {
         return crypt($password . $login, $login);
@@ -217,7 +278,7 @@ class user
      */
     public static function register(array $data) {
         // TODO: rewrite to POST method
-        $data["password"] = user::crypt($data["login"], $data["password"]);
+        $data["password"] = user::hash_password($data["password"]);
         return config::$db->insert("user", $data);
     }
     
@@ -233,12 +294,23 @@ class user
         $userMenu = '<a href="<!-- www -->/?q=user/info" class="menu-title twelve columns menu-item">Hello, ' .
             user::name() . '</a>';
         $userMenuLinks = config::$db->select("user_menu");
+        $addedRefs = [];
 
         foreach($userMenuLinks as $menu) {
             if(user::has_capability($menu["capability_id"])) {
                 $ref = $menu["reference"];
                 $name = $menu["name"];
+                $addedRefs[$ref] = true;
                 $userMenu .= "<a href='{$ref}' class='menu-item twelve columns'>{$name}</a>";
+            }
+        }
+
+        if (user::has_role("admin")) {
+            if (!isset($addedRefs["/?q=management"])) {
+                $userMenu .= "<a href='/?q=management' class='menu-item twelve columns'>Management</a>";
+            }
+            if (!isset($addedRefs["/?q=analytics/links"])) {
+                $userMenu .= "<a href='/?q=analytics/links' class='menu-item twelve columns'>Analytics</a>";
             }
         }
 

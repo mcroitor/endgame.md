@@ -851,3 +851,72 @@ input[type="button"].button-primary:focus {
         min-height: 44px;
     }
 }
+
+/* Syzygy Tablebase Panel */
+.pgnlive-syzygy {
+    margin-top: 1.2rem;
+    padding: 1rem 1.2rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1.35rem;
+}
+
+.syzygy-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.syzygy-title {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.syzygy-verdict {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1.2rem;
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.syzygy-cat-win,
+.syzygy-cat-cursed-win {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.syzygy-cat-draw {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.syzygy-cat-loss,
+.syzygy-cat-blessed-loss {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.syzygy-metrics {
+    color: #6b7280;
+    font-size: 1.25rem;
+}
+
+.syzygy-moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+}
+
+.syzygy-move-chip {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+    font-size: 1.25rem;
+}

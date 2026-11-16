@@ -7,5 +7,6 @@ VOLUME [ "/database", "/site" ]
 COPY ./database /src/database
 COPY ./site /src/site
 COPY ./docker/init/init.sh /init.sh
+RUN sed -i 's/\r$//' /init.sh && chmod +x /init.sh
 
-CMD [ "/init.sh" ]
+CMD [ "bash", "/init.sh" ]

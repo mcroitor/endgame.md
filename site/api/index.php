@@ -24,9 +24,7 @@ function get_data(array $params)
         return ["html" => [], "stat" => 0];
     }
 
-    $escape = static fn($val): string => str_replace("'", "''", (string) $val);
-
-    $author = $escape(translitIt((string) ($request->author ?? "")));
+    $author = translitIt((string) ($request->author ?? ""));
     $wmin = (int) ($request->wmin ?? 0);
     $wmax = (int) ($request->wmax ?? 32);
     $bmin = (int) ($request->bmin ?? 0);
@@ -40,65 +38,72 @@ function get_data(array $params)
         $page = 0;
     }
 
-    $query_config = [
-        \mc\sql\query::TYPE => \mc\sql\query::SELECT,
-        \mc\sql\query::TABLE => "endgame",
-        \mc\sql\query::FIELDS => ["*"],
-        \mc\sql\query::WHERE => [
-            "author LIKE '%{$author}%'",
-            "whitep BETWEEN {$wmin} and {$wmax}",
-            "blackp BETWEEN {$bmin} and {$bmax}",
-            "date BETWEEN {$fromDate} and {$toDate}",
-        ],
+    $where = [
+        "author LIKE ?",
+        "whitep BETWEEN ? AND ?",
+        "blackp BETWEEN ? AND ?",
+        "date BETWEEN ? AND ?",
+    ];
+    $params = [
+        "%{$author}%",
+        $wmin,
+        $wmax,
+        $bmin,
+        $bmax,
+        $fromDate,
+        $toDate,
     ];
 
     $stipulation = (string) ($request->stipulation ?? "-");
     if ($stipulation !== "-") {
-        $query_config[\mc\sql\query::WHERE][] = "stipulation LIKE '" . $escape($stipulation) . "'";
+        $where[] = "stipulation LIKE ?";
+        $params[] = $stipulation;
     }
     $theme = (string) ($request->theme ?? "-");
     if ($theme !== "-") {
-        $query_config[\mc\sql\query::WHERE][] = "theme LIKE '%" . $escape($theme) . "%'";
+        $where[] = "theme LIKE ?";
+        $params[] = "%{$theme}%";
     }
     $piecePattern = (string) ($request->piece_pattern ?? "");
     if ($piecePattern !== "") {
-        $query_config[\mc\sql\query::WHERE][] = "piece_pattern='" . $escape($piecePattern) . "'";
+        $where[] = "piece_pattern = ?";
+        $params[] = $piecePattern;
     }
     $cook = $request->cook ?? "all";
     if ($cook === true || $cook === "1" || $cook === 1) {
-        $query_config[\mc\sql\query::WHERE][] = "cook=1";
+        $where[] = "cook = 1";
     } elseif ($cook === "0" || $cook === 0) {
-        $query_config[\mc\sql\query::WHERE][] = "cook=0";
+        $where[] = "cook = 0";
     }
 
     $sortMap = [
-        "pid_asc" => ["pid" => "ASC"],
-        "date_asc" => ["date" => "ASC", "pid" => "ASC"],
-        "date_desc" => ["date" => "DESC", "pid" => "ASC"],
-        "author_asc" => ["author" => "ASC", "pid" => "ASC"],
-        "pieces_asc" => ["(whitep + blackp)" => "ASC", "pid" => "ASC"],
+        "pid_asc" => "pid ASC",
+        "date_asc" => "date ASC, pid ASC",
+        "date_desc" => "date DESC, pid ASC",
+        "author_asc" => "author ASC, pid ASC",
+        "pieces_asc" => "(whitep + blackp) ASC, pid ASC",
     ];
     $sortKey = (string) ($request->sort ?? "pid_asc");
-    $query_config[\mc\sql\query::ORDER] = $sortMap[$sortKey] ?? $sortMap["pid_asc"];
+    $orderBy = $sortMap[$sortKey] ?? $sortMap["pid_asc"];
 
-    $query = new \mc\sql\query($query_config);
+    $whereSql = implode(" AND ", $where);
+    $countSql = "SELECT COUNT(*) AS cnt FROM endgame WHERE {$whereSql}";
+    $countRows = $db->exec_prepared($countSql, $params);
+    $stat = (int) ($countRows[0]["cnt"] ?? 0);
 
-    $queryResult = $db->exec($query);
-    $stat = count($queryResult);
-
-    $query = $query->limit(12, $page);
+    $sql = "SELECT * FROM endgame WHERE {$whereSql} ORDER BY {$orderBy} LIMIT 12 OFFSET {$page}";
 
     // logging
     $dblogger = new \core\dblogger($db, \meta\statistic::__name__);
     $logData = [
-        \meta\statistic::QUERY => $query->build(),
+        \meta\statistic::QUERY => $sql,
         \meta\statistic::TIME => time(),
         \meta\statistic::IP => $_SERVER['REMOTE_ADDR'] ?? ''
     ];
     $dblogger->write($logData);
     //end logging
 
-    $result = $db->exec($query);
+    $result = $db->exec_prepared($sql, $params);
 
     foreach ($result as $fetch) {
         $html[] = [

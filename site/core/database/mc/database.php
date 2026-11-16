@@ -51,6 +51,37 @@ class database
     }
 
     /**
+     * Execute a parameterized prepared statement and return fetched rows.
+     * @param string $query
+     * @param array $params
+     * @param bool $need_fetch
+     * @return array
+     */
+    public function exec_prepared(string $query, array $params = [], bool $need_fetch = true): array
+    {
+        $array = array();
+        try {
+            $stmt = $this->pdo->prepare($query);
+            if ($stmt === false) {
+                $aux = "Prepare error {$query}: "
+                    . $this->pdo->errorInfo()[0]
+                    . " : "
+                    . $this->pdo->errorInfo()[1]
+                    . ", message = "
+                    . $this->pdo->errorInfo()[2];
+                exit($aux);
+            }
+            $stmt->execute($params);
+            if ($need_fetch) {
+                $array = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            }
+        } catch (\PDOException $ex) {
+            exit($ex->getMessage() . ", query: " . $query);
+        }
+        return $array;
+    }
+
+    /**
      * Common query method
      * @param string $query
      * @param string $error

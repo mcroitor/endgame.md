@@ -126,6 +126,69 @@ function toggleAdvanced(forceState) {
     }
 }
 
+function countFenPieces(fen) {
+    const boardPart = String(fen || "").trim().split(/\s+/)[0] || "";
+    const matches = boardPart.match(/[kqrbnpKQRBNP]/g);
+    return matches ? matches.length : 0;
+}
+
+function formatSyzygyCategory(cat) {
+    const map = {
+        win: "Win",
+        draw: "Draw",
+        loss: "Loss",
+        "cursed-win": "Cursed Win",
+        "blessed-loss": "Blessed Loss",
+        "maybe-win": "Maybe Win",
+        "maybe-loss": "Maybe Loss",
+        unknown: "Unknown"
+    };
+    return map[cat] || String(cat || "Unknown");
+}
+
+async function lookupSyzygy(fen) {
+    const box = get("pgnlive-syzygy");
+    if (!box || !fen) return;
+
+    box.classList.remove("hidden");
+    box.innerHTML = '<div class="status-message">Querying Syzygy tablebase&hellip;</div>';
+
+    try {
+        const res = await fetch(`https://tablebase.lichess.ovh/standard?fen=${encodeURIComponent(fen)}`);
+        if (res.status === 429) {
+            box.innerHTML = '<div class="status-message status-error">Syzygy rate limit reached. Please try again in a moment.</div>';
+            return;
+        }
+        if (!res.ok) {
+            box.innerHTML = `<div class="status-message status-error">Syzygy lookup unavailable (HTTP ${res.status}).</div>`;
+            return;
+        }
+        const data = await res.json();
+        const verdict = formatSyzygyCategory(data.category);
+        const dtz = data.dtz !== null && data.dtz !== undefined ? `DTZ ${data.dtz}` : "";
+        const dtm = data.dtm !== null && data.dtm !== undefined ? `DTM ${data.dtm}` : "";
+        const metrics = [dtz, dtm].filter(Boolean).join(" &middot; ");
+
+        const moves = Array.isArray(data.moves) ? data.moves.slice(0, 6) : [];
+        const movesHtml = moves.length
+            ? `<div class="syzygy-moves">${moves.map((m) => {
+                const moveCat = formatSyzygyCategory(m.category);
+                const moveDtz = m.dtz !== null && m.dtz !== undefined ? ` (DTZ ${m.dtz})` : "";
+                return `<span class="syzygy-move-chip"><strong>${escapeHtml(m.san)}</strong>: ${escapeHtml(moveCat)}${escapeHtml(moveDtz)}</span>`;
+            }).join("")}</div>`
+            : "";
+
+        box.innerHTML = `<div class="syzygy-header">
+                <span class="syzygy-title">Syzygy Tablebase</span>
+                <span class="syzygy-verdict syzygy-cat-${escapeHtml(data.category || "unknown")}">${escapeHtml(verdict)}</span>
+                ${metrics ? `<span class="syzygy-metrics">${metrics}</span>` : ""}
+            </div>
+            ${movesHtml}`;
+    } catch (err) {
+        box.innerHTML = `<div class="status-message status-error">Failed to reach Syzygy tablebase (${escapeHtml(err.message)}).</div>`;
+    }
+}
+
 function parseSideToMove(fen) {
     const parts = String(fen || "").trim().split(/\s+/);
     if (parts[1] === "b") return "Black to move";
@@ -275,8 +338,13 @@ function syncUrlWithQuery(sendData) {
     if (sendData.page > 0) params.set("page", String(sendData.page));
 
     const qs = params.toString();
-    const nextUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
-    window.history.pushState(null, "", nextUrl);
+    const basePath = window.location.pathname.replace(/^\/+/, "/") || "/";
+    const nextUrl = qs ? `${basePath}?${qs}` : basePath;
+    try {
+        window.history.pushState(null, "", nextUrl);
+    } catch (_) {
+        // ignore if history state cannot be updated
+    }
 }
 
 function restoreQueryFromUrl() {
@@ -389,7 +457,12 @@ function clearAll() {
 
     updateFiltersBadge();
     if (window.history && window.history.pushState) {
-        window.history.pushState(null, "", window.location.pathname);
+        const basePath = window.location.pathname.replace(/^\/+/, "/") || "/";
+        try {
+            window.history.pushState(null, "", basePath);
+        } catch (_) {
+            // ignore
+        }
     }
 }
 
@@ -456,15 +529,23 @@ async function pgnLive(pid, triggerEl = null) {
 
     if (actionsBox) {
         const fen = study ? String(study["#fen#"] || "") : "";
+        const pieceCount = fen ? countFenPieces(fen) : 0;
         const lichessUrl = fen ? `https://lichess.org/analysis/standard/${encodeURI(fen.replaceAll(" ", "_"))}` : "";
         const studyUrl = `${window.location.origin}${APP_BASE}/?pid=${encodeURIComponent(pid)}`;
         actionsBox.innerHTML = `
             ${fen ? `<button type="button" class="button js-modal-copy-fen" data-fen="${escapeHtml(fen)}">Copy FEN</button>` : ""}
             <a href="${APP_BASE}/?q=pgn/${escapeHtml(pid)}" class="button" download="endgame_${escapeHtml(pid)}.pgn">Download PGN</a>
             ${lichessUrl ? `<a href="${escapeHtml(lichessUrl)}" class="button" target="_blank" rel="noopener">Open in Lichess</a>` : ""}
+            ${fen && pieceCount > 0 && pieceCount <= 7 ? `<button type="button" class="button js-check-syzygy" data-fen="${escapeHtml(fen)}">Check Syzygy</button>` : ""}
             <button type="button" class="button js-modal-copy-link" data-url="${escapeHtml(studyUrl)}">Copy link</button>
         `;
         actionsBox.classList.remove("hidden");
+    }
+
+    const syzygyBox = get("pgnlive-syzygy");
+    if (syzygyBox) {
+        syzygyBox.innerHTML = "";
+        syzygyBox.classList.add("hidden");
     }
 
     backdrop.classList.remove("hidden");
@@ -509,6 +590,11 @@ function closePgnModal() {
     if (actionsBox) {
         actionsBox.innerHTML = "";
         actionsBox.classList.add("hidden");
+    }
+    const syzygyBox = get("pgnlive-syzygy");
+    if (syzygyBox) {
+        syzygyBox.innerHTML = "";
+        syzygyBox.classList.add("hidden");
     }
     if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
         lastFocusedElement.focus();
@@ -664,6 +750,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const copyLink = e.target.closest(".js-modal-copy-link");
             if (copyLink) {
                 copyToClipboard(copyLink.getAttribute("data-url") || "", copyLink, "Link copied \u2713");
+                return;
+            }
+            const syzygyBtn = e.target.closest(".js-check-syzygy");
+            if (syzygyBtn) {
+                lookupSyzygy(syzygyBtn.getAttribute("data-fen") || "");
             }
         });
     }

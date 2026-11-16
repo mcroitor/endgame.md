@@ -1,5 +1,6 @@
 INSERT INTO modules VALUES (null, "articles", "articles");
 INSERT INTO modules VALUES (null, "endgame", "endgame");
+INSERT INTO modules VALUES (null, "analytics", "analytics");
 
 -- user data
 INSERT INTO role (id, name) VALUES (1, "guest"), (2, "user"), (3, "admin");
@@ -18,7 +19,11 @@ INSERT INTO capabilities (id, name) VALUES
     (11, "article::create"),
     (12, "article::read"),
     (13, "article::update"),
-    (14, "article::delete");
+    (14, "article::delete"),
+    (15, "analytics::create"),
+    (16, "analytics::read"),
+    (17, "analytics::update"),
+    (18, "analytics::delete");
 
 INSERT INTO role_capabilities (role_id, capability_id, permission) VALUES
     (2, 1, 0),
@@ -34,6 +39,10 @@ INSERT INTO role_capabilities (role_id, capability_id, permission) VALUES
     (3, 7, 1),
     (3, 8, 1),
     (3, 9, 1),
+    (3, 15, 1),
+    (3, 16, 1),
+    (3, 17, 1),
+    (3, 18, 1),
     (1, 10, 1);
 
 -- users
@@ -44,3 +53,6 @@ INSERT INTO user (name, login, password, role_id) VALUES
 -- user menu
 INSERT INTO user_menu VALUES(2,'Create Endgame','/?q=endgame/new',1);
 INSERT INTO user_menu VALUES(3,'Import Endgames','/?q=endgame/import',1);
+INSERT INTO user_menu VALUES(4,'Analytics','/?q=analytics/links',16);
+INSERT INTO user_menu VALUES(5,'Management','/?q=management',5);
+INSERT INTO user_menu VALUES(4,'Analytics','/?q=analytics/links',16);

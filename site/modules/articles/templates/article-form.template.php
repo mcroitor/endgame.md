@@ -1,4 +1,5 @@
 <form method="post" action="<!-- www -->/?q=article/create">
+    <!-- csrf-input -->
     <div class="row">
         <div class="twelve columns">
             <label for="article-title">Article title</label>

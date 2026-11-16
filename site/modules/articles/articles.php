@@ -53,6 +53,7 @@ class articles
 
     #[\mc\route("article/create")]
     public static function create() {
+        \mc\user::require_csrf();
         if (\mc\user::has_capability(ARTICLE_CAPABILITY::CREATE) === false){
             header("location:" . \config::www);
             exit();

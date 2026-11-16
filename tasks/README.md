@@ -30,3 +30,14 @@ See `tasks/ui/recommendations.md` and `tasks/ui/ui_ex.png` for details.
 | [TASK-017](TASK-017-ui-solve-yourself-mode.md) | Interactive "Solve Yourself" Mode in Solution Modal | High | `ui/recommendations.md` §6 |
 | [TASK-018](TASK-018-ui-syzygy-tablebase-integration.md) | Syzygy Endgame Tablebase Lookup for <= 7 Pieces | Medium | Solution Viewer |
 | [TASK-019](TASK-019-ui-advanced-pgn-player-and-mobile-gestures.md) | Advanced Solution Player Controls, Collapsible Variations, and Mobile Gestures | Medium | Solution Viewer |
+
+## Security, Infrastructure & Product Enhancement Tasks
+
+| Task | Title | Priority | Reference |
+| :--- | :--- | :--- | :--- |
+| [TASK-020](TASK-020-security-prepared-statements-and-csrf.md) | Prepared Statements, Password Hashing, and CSRF Protection | Critical | Security Hardening |
+| [TASK-021](TASK-021-env-config-and-diagram-caching.md) | Environment-Based Configuration and Diagram HTTP Caching | High | Deployment & Performance |
+| [TASK-022](TASK-022-automated-tests-and-ci.md) | Automated Tests and GitHub Actions CI | High | Quality & CI/CD |
+| [TASK-023](TASK-023-endgame-create-and-admin-user-edit.md) | Complete `endgame/create`, `piece_pattern` UI, and `user/edit` Route | Medium | Functional Stubs |
+| [TASK-024](TASK-024-ui-favorites-history-and-dark-mode.md) | Favorites, Viewing History, Dark Mode, and Moderator Cook Toggle | Low | `ui/recommendations.md` §6 |
+| [TASK-025](TASK-025-analytics-access-and-permissions.md) | Enable Admin Access and Enforce Permissions for `analytics` Module | High | Module Access & Auth |

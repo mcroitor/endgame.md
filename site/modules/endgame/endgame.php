@@ -44,6 +44,7 @@ class endgame
     #[\mc\route('endgame/create')]
     public static function create(array $params)
     {
+        user::require_csrf();
         if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
             header("location:" . \config::www);
             exit();
@@ -66,6 +67,7 @@ class endgame
     #[\mc\route("pgn/upload")]
     public static function upload(array $params)
     {
+        user::require_csrf();
         if (!user::has_capability(ENDGAME_CAPABILITIY::CREATE)) {
             header("location:" . \config::www);
             exit();

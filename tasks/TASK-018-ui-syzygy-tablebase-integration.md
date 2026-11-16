@@ -22,6 +22,6 @@ Integrate Lichess Syzygy tablebase lookup (`https://tablebase.lichess.ovh/standa
    - Display exact tablebase verdict (`Win`, `Draw`, `Loss`), DTZ/DTM if available, and top tablebase moves with their outcomes.
 
 ## Acceptance Criteria
-- [ ] Studies with `<= 7` pieces display a `Check Syzygy` action in the `Solution` modal.
-- [ ] Clicking it shows the theoretical evaluation and best moves from the Syzygy tablebase.
-- [ ] Studies with `> 7` pieces do not trigger unnecessary tablebase requests.
+- [x] Studies with `<= 7` pieces display a `Check Syzygy` action in the `Solution` modal.
+- [x] Clicking it shows the theoretical evaluation and best moves from the Syzygy tablebase.
+- [x] Studies with `> 7` pieces do not trigger unnecessary tablebase requests.
