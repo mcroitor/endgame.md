@@ -48,6 +48,16 @@
                 </select>
             </div>
 
+            <div class="filter-group">
+                <span class="filter-label">Year</span>
+                <div class="range-inputs">
+                    <label for="from_date" class="range-sub">from</label>
+                    <input type="number" min="0" max="3000" value="1900" id="from_date" />
+                    <label for="to_date" class="range-sub">to</label>
+                    <input type="number" min="0" max="3000" value="<!-- last-date -->" id="to_date" />
+                </div>
+            </div>
+
             <div class="filter-group filter-group-wide">
                 <div class="piece-matrix-header">
                     <span class="filter-label">Pieces (material without kings)</span>
@@ -86,16 +96,6 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="filter-group">
-                <span class="filter-label">Year</span>
-                <div class="range-inputs">
-                    <label for="from_date" class="range-sub">from</label>
-                    <input type="number" min="0" max="3000" value="1900" id="from_date" />
-                    <label for="to_date" class="range-sub">to</label>
-                    <input type="number" min="0" max="3000" value="<!-- last-date -->" id="to_date" />
-                </div>
             </div>
 
             <div class="filter-group filter-group-wide">

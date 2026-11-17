@@ -300,8 +300,20 @@ input[type="button"].button-primary:focus {
 
 .advanced-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.6rem;
+}
+
+@media (max-width: 900px) {
+    .advanced-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .advanced-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .filter-group {
