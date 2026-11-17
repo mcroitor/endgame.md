@@ -21,7 +21,7 @@ class analytics
     /**
      * Check and fix the results of the endgame.
      */
-    public static function fixResults()
+    public static function fixResults(bool $dryRun = false)
     {
         $okResults = [
             "White wins",
@@ -30,32 +30,66 @@ class analytics
         ];
         $association = [
             "1-0" => "White wins",
+            "0-1" => "Black wins",
             "1/2-1/2" => "Draw",
-            "Win" => "White wins",
+            "win" => "White wins",
+            "=" => "Draw",
         ];
         $stat = [
             "fixed" => 0,
+            "recovered_from_pgn" => 0,
+            "unspecified" => 0,
             "invalid" => 0,
         ];
 
         $db = \config::$db;
-        $endgames = $db->select(\meta\endgame::__name__, ["*"], [
-            \meta\endgame::STIPULATION . 
+        $endgames = $db->select(\meta\endgame::__name__, ["pid", "stipulation"], [
+            \meta\endgame::STIPULATION .
             " NOT IN ('{$okResults[0]}', '{$okResults[1]}', '{$okResults[2]}')"
         ]);
         foreach ($endgames as $endgame) {
-            $result = $endgame[\meta\endgame::STIPULATION];
-            if (isset($association[$result])) {
+            $pid = (int) $endgame[\meta\endgame::PID];
+            $result = trim((string) $endgame[\meta\endgame::STIPULATION]);
+            $key = strtolower($result);
+
+            if (isset($association[$key])) {
                 $stat["fixed"]++;
-                $endgame[\meta\endgame::STIPULATION] = $association[$result];
-                $db->update(
-                    \meta\endgame::__name__,
-                    $endgame,
-                    [\meta\endgame::PID => $endgame[\meta\endgame::PID]]
-                );
-            } else {
-                $stat["invalid"]++;
+                if (!$dryRun) {
+                    $db->update(
+                        \meta\endgame::__name__,
+                        [\meta\endgame::STIPULATION => $association[$key]],
+                        [\meta\endgame::PID => $pid]
+                    );
+                }
+                continue;
             }
+
+            if ($result === "*" || $result === "") {
+                $rawRows = $db->exec_prepared("SELECT data FROM raw WHERE id = ?", [$pid]);
+                $pgn = (string) ($rawRows[0]["data"] ?? "");
+                $pgnResult = null;
+                if (preg_match('/\[Result\s+"(1-0|0-1|1\/2-1\/2)"\]/i', $pgn, $m)) {
+                    $pgnResult = $association[strtolower($m[1])] ?? null;
+                } elseif (preg_match('/(?:^|\s)(1-0|0-1|1\/2-1\/2)\s*$/', trim($pgn), $m)) {
+                    $pgnResult = $association[strtolower($m[1])] ?? null;
+                }
+
+                if ($pgnResult !== null) {
+                    $stat["recovered_from_pgn"]++;
+                    if (!$dryRun) {
+                        $db->update(
+                            \meta\endgame::__name__,
+                            [\meta\endgame::STIPULATION => $pgnResult],
+                            [\meta\endgame::PID => $pid]
+                        );
+                    }
+                } else {
+                    $stat["unspecified"]++;
+                }
+                continue;
+            }
+
+            $stat["invalid"]++;
         }
         return $stat;
     }
@@ -85,46 +119,44 @@ class analytics
     /**
      * Fix the endgame piece patterns.
      */
-    public static function fixPiecePatterns()
+    public static function fixPiecePatterns(bool $dryRun = false)
     {
         $db = \config::$db;
         $endgames = $db->select(
-            \meta\endgame::__name__, 
+            \meta\endgame::__name__,
             ["*"],
             [
-                \meta\endgame::PIECE_PATTERN . 
-                " IS NULL OR " . 
+                \meta\endgame::PIECE_PATTERN .
+                " IS NULL OR " .
                 \meta\endgame::PIECE_PATTERN . " like ''" .
                 " OR " . \meta\endgame::PIECE_PATTERN . " = 'unknown'"
             ]
         );
-        \mc\logger::stderr()->info("Endgames to fix: " . count($endgames));
         $stat = [
             "fixed" => 0,
             "removed" => 0,
         ];
         foreach ($endgames as $endgame) {
+            $pid = (int) $endgame[\meta\endgame::PID];
             $pattern = self::getPiecePattern($endgame);
-            \mc\logger::stderr()->info("PID: " . $endgame[\meta\endgame::PID]);
-            \mc\logger::stderr()->info("FEN: " . $endgame[\meta\endgame::FEN]);
-            \mc\logger::stderr()->info("Pattern: " . $pattern);
-            if($pattern === "") {
-                $db->delete(
-                    \meta\endgame::__name__,
-                    [\meta\endgame::PID => $endgame[\meta\endgame::PID]]
-                );
+            if ($pattern === "") {
+                if (!$dryRun) {
+                    $db->delete(\meta\endgame::__name__, [\meta\endgame::PID => $pid]);
+                    $db->delete("raw", ["id" => $pid]);
+                }
                 $stat["removed"]++;
                 continue;
             }
             if ($pattern === $endgame[\meta\endgame::PIECE_PATTERN]) {
                 continue;
             }
-            $endgame[\meta\endgame::PIECE_PATTERN] = $pattern;
-            $db->update(
-                \meta\endgame::__name__,
-                $endgame,
-                [\meta\endgame::PID => $endgame[\meta\endgame::PID]]
-            );
+            if (!$dryRun) {
+                $db->update(
+                    \meta\endgame::__name__,
+                    [\meta\endgame::PIECE_PATTERN => $pattern],
+                    [\meta\endgame::PID => $pid]
+                );
+            }
             $stat["fixed"]++;
         }
         return $stat;
@@ -171,17 +203,40 @@ class analytics
             header("location:" . \config::www);
             exit();
         }
-        $fixResult = self::fixResults();
-        // $authors = self::detectAuthors();
-        $fixPatterns = self::fixPiecePatterns();
-        $result = "<h3>Database fixes</h3>";
+
+        $isPost = ($_SERVER["REQUEST_METHOD"] ?? "GET") === "POST";
+        if ($isPost) {
+            user::require_csrf();
+            $fixResult = self::fixResults(false);
+            $fixPatterns = self::fixPiecePatterns(false);
+            $result = "<h3>Database fixes applied</h3>";
+        } else {
+            $fixResult = self::fixResults(true);
+            $fixPatterns = self::fixPiecePatterns(true);
+            $result = "<h3>Auto-Fix Preview (Dry Run)</h3>";
+        }
+
         $result .= "<ul>";
-        $result .= "<li>Results fixed: " . $fixResult["fixed"] . "</li>";
-        $result .= "<li>Results invalid: " . $fixResult["invalid"] . "</li>";
-        // $result .= "<li>Authors detected: " . $authors . "</li>";
-        $result .= "<li>Patterns fixed: " . $fixPatterns["fixed"] . "</li>";
-        $result .= "<li>Endgames removed: " . $fixPatterns["removed"] . "</li>";
+        $result .= "<li>Legacy stipulations normalized (<code>1-0</code>, <code>0-1</code>, <code>1/2-1/2</code>): <strong>" . $fixResult["fixed"] . "</strong></li>";
+        $result .= "<li>Unspecified (<code>*</code>) recoverable from PGN: <strong>" . $fixResult["recovered_from_pgn"] . "</strong></li>";
+        $result .= "<li>Unspecified (<code>*</code>) without PGN result: <strong>" . $fixResult["unspecified"] . "</strong></li>";
+        $result .= "<li>Unrecognized stipulations: <strong>" . $fixResult["invalid"] . "</strong></li>";
+        $result .= "<li>Piece patterns to rebuild: <strong>" . $fixPatterns["fixed"] . "</strong></li>";
+        $result .= "<li>Empty-pattern studies to remove: <strong>" . $fixPatterns["removed"] . "</strong></li>";
         $result .= "</ul>";
+
+        $nothingToFix = ($fixResult["fixed"] + $fixResult["recovered_from_pgn"] + $fixPatterns["fixed"] + $fixPatterns["removed"]) === 0;
+        if (!$isPost) {
+            if ($nothingToFix) {
+                $result .= "<p>Database is already clean &mdash; no automatic fixes needed.</p>";
+            } else {
+                $result .= "<form method='post' action='<!-- www -->/?q=analytics/fix'>";
+                $result .= "<!-- csrf-input -->";
+                $result .= "<input type='submit' value='Run Auto-Fix' class='button-primary' />";
+                $result .= "</form>";
+            }
+        }
+        $result .= "<p><a href='<!-- www -->/?q=analytics/links' class='button'>Back to Analytics</a></p>";
         return $result;
     }
 
