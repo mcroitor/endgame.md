@@ -50,6 +50,21 @@ class database
         $this->pdo = null;
     }
 
+    public function begin_transaction(): bool
+    {
+        return $this->pdo->beginTransaction();
+    }
+
+    public function commit(): bool
+    {
+        return $this->pdo->commit();
+    }
+
+    public function roll_back(): bool
+    {
+        return $this->pdo->rollBack();
+    }
+
     /**
      * Execute a parameterized prepared statement and return fetched rows.
      * @param string $query

@@ -448,45 +448,89 @@ class analytics
 
         $db = \config::$db;
         $recounted = 0;
+        $computeFromFen = static function (string $fen): array {
+            $epd = explode(" ", trim($fen))[0] ?? "";
+            $order = "QRBNPqrbnp";
+            $counts = [];
+            for ($i = 0; $i < strlen($order); $i++) {
+                $counts[$order[$i]] = 0;
+            }
+            $w = 0;
+            $b = 0;
+            for ($i = 0; $i < strlen($epd); $i++) {
+                $ch = $epd[$i];
+                if (str_contains("KQRBNP", $ch)) {
+                    $w++;
+                } elseif (str_contains("kqrbnp", $ch)) {
+                    $b++;
+                }
+                if (isset($counts[$ch])) {
+                    $counts[$ch]++;
+                }
+            }
+            $pattern = "";
+            foreach ($counts as $ch => $cnt) {
+                if ($cnt > 0) {
+                    $pattern .= str_repeat($ch, $cnt);
+                }
+            }
+            return ["whitep" => $w, "blackp" => $b, "piece_pattern" => $pattern];
+        };
+
         if (($params[0] ?? "") === "recount" && ($_SERVER["REQUEST_METHOD"] ?? "GET") === "POST") {
             user::require_csrf();
-            $all = $db->query_sql("SELECT pid, fen, whitep, blackp FROM endgame");
-            foreach ($all as $row) {
-                $epd = explode(" ", trim((string) $row[\meta\endgame::FEN]))[0] ?? "";
-                $w = 0;
-                $b = 0;
-                for ($i = 0; $i < strlen($epd); $i++) {
-                    if (str_contains("KQRBNP", $epd[$i])) $w++;
-                    elseif (str_contains("kqrbnp", $epd[$i])) $b++;
+            $all = $db->query_sql("SELECT pid, fen, whitep, blackp, piece_pattern FROM endgame");
+            $db->begin_transaction();
+            try {
+                foreach ($all as $row) {
+                    $calc = $computeFromFen((string) $row[\meta\endgame::FEN]);
+                    if (
+                        (int) $row[\meta\endgame::WHITEP] !== $calc["whitep"]
+                        || (int) $row[\meta\endgame::BLACKP] !== $calc["blackp"]
+                        || (string) ($row[\meta\endgame::PIECE_PATTERN] ?? "") !== $calc["piece_pattern"]
+                    ) {
+                        $db->exec_prepared(
+                            "UPDATE endgame SET whitep = ?, blackp = ?, piece_pattern = ? WHERE pid = ?",
+                            [$calc["whitep"], $calc["blackp"], $calc["piece_pattern"], (int) $row[\meta\endgame::PID]],
+                            false
+                        );
+                        $recounted++;
+                    }
                 }
-                if ((int) $row[\meta\endgame::WHITEP] !== $w || (int) $row[\meta\endgame::BLACKP] !== $b) {
-                    $db->exec_prepared("UPDATE endgame SET whitep = ?, blackp = ? WHERE pid = ?", [$w, $b, (int) $row[\meta\endgame::PID]], false);
-                    $recounted++;
-                }
+                $db->commit();
+            } catch (\Throwable $e) {
+                $db->roll_back();
+                throw $e;
             }
         }
 
         $missingRaw = $db->query_sql("SELECT e.pid, e.author, e.date FROM endgame e LEFT JOIN raw r ON r.id = e.pid WHERE r.id IS NULL OR trim(r.data) = '' LIMIT 30");
         $orphanRaw = $db->query_sql("SELECT r.id FROM raw r LEFT JOIN endgame e ON e.pid = r.id WHERE e.pid IS NULL LIMIT 30");
-        $pieceMismatches = $db->query_sql("SELECT pid, fen, whitep, blackp FROM endgame LIMIT 5000");
+        $allRows = $db->query_sql("SELECT pid, fen, whitep, blackp, piece_pattern FROM endgame");
+        $totalMismatches = 0;
         $mismatchRows = [];
-        foreach ($pieceMismatches as $row) {
-            $epd = explode(" ", trim((string) $row[\meta\endgame::FEN]))[0] ?? "";
-            $w = 0;
-            $b = 0;
-            for ($i = 0; $i < strlen($epd); $i++) {
-                if (str_contains("KQRBNP", $epd[$i])) $w++;
-                elseif (str_contains("kqrbnp", $epd[$i])) $b++;
-            }
-            if ((int) $row[\meta\endgame::WHITEP] !== $w || (int) $row[\meta\endgame::BLACKP] !== $b) {
-                $mismatchRows[] = ["pid" => (int) $row[\meta\endgame::PID], "db" => "{$row[\meta\endgame::WHITEP]}+{$row[\meta\endgame::BLACKP]}", "fen" => "{$w}+{$b}"];
-                if (count($mismatchRows) >= 30) break;
+        foreach ($allRows as $row) {
+            $calc = $computeFromFen((string) $row[\meta\endgame::FEN]);
+            $dbPattern = (string) ($row[\meta\endgame::PIECE_PATTERN] ?? "");
+            if (
+                (int) $row[\meta\endgame::WHITEP] !== $calc["whitep"]
+                || (int) $row[\meta\endgame::BLACKP] !== $calc["blackp"]
+                || $dbPattern !== $calc["piece_pattern"]
+            ) {
+                $totalMismatches++;
+                if (count($mismatchRows) < 25) {
+                    $mismatchRows[] = [
+                        "pid" => (int) $row[\meta\endgame::PID],
+                        "db" => "{$row[\meta\endgame::WHITEP]}+{$row[\meta\endgame::BLACKP]} ({$dbPattern})",
+                        "fen" => "{$calc['whitep']}+{$calc['blackp']} ({$calc['piece_pattern']})",
+                    ];
+                }
             }
         }
 
         $html = "<h3>Database Integrity Check</h3>";
         if ($recounted > 0) {
-            $html .= "<p><strong>Recounted piece counts for {$recounted} studies.</strong></p>";
+            $html .= "<p><strong>Reindexed piece counts and patterns for {$recounted} studies.</strong></p>";
         }
         $html .= "<h4>Studies missing PGN in <code>raw</code> (" . count($missingRaw) . ")</h4>";
         if (!empty($missingRaw)) {
@@ -506,16 +550,21 @@ class analytics
             ? "<p>IDs: " . implode(", ", array_map(static fn($r) => (int) $r["id"], $orphanRaw)) . "</p>"
             : "<p>None.</p>";
 
-        $html .= "<h4>Piece count mismatches (" . count($mismatchRows) . " sampled)</h4>";
-        if (!empty($mismatchRows)) {
-            $html .= "<form method='post' action='<!-- www -->/?q=analytics/integrity/recount'><!-- csrf-input --><input type='submit' value='Recount all piece counts' class='button-primary' /></form>";
+        $html .= "<h4>Piece count &amp; pattern mismatches ({$totalMismatches} total)</h4>";
+        if ($totalMismatches > 0) {
+            $html .= "<form method='post' action='<!-- www -->/?q=analytics/integrity/recount'><!-- csrf-input --><input type='submit' value='Reindex all piece counts &amp; patterns' class='button-primary' /></form>";
             $html .= "<ul>";
             foreach ($mismatchRows as $m) {
-                $html .= "<li>PID {$m['pid']}: DB {$m['db']} vs FEN {$m['fen']}</li>";
+                $dbEsc = htmlspecialchars($m["db"], ENT_QUOTES, "UTF-8");
+                $fenEsc = htmlspecialchars($m["fen"], ENT_QUOTES, "UTF-8");
+                $html .= "<li>PID {$m['pid']}: DB {$dbEsc} vs FEN {$fenEsc}</li>";
+            }
+            if ($totalMismatches > count($mismatchRows)) {
+                $html .= "<li>&hellip;and " . ($totalMismatches - count($mismatchRows)) . " more.</li>";
             }
             $html .= "</ul>";
         } else {
-            $html .= "<p>All sampled piece counts match FEN.</p>";
+            $html .= "<p>All piece counts and patterns match FEN.</p>";
         }
         return $html;
     }
