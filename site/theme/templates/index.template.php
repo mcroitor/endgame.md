@@ -47,6 +47,7 @@
                 <button type="button" id="pgnlive-close" class="close-icon" aria-label="Close solution">&times;</button>
             </div>
             <div id="pgnlive-meta" class="pgnlive-meta hidden"></div>
+            <div id="pgnlive-player-bar" class="pgnlive-player-bar hidden"></div>
             <div id="pgnlive"></div>
             <div id="solve-workspace" class="solve-workspace hidden"></div>
             <div id="pgnlive-actions" class="pgnlive-actions hidden"></div>

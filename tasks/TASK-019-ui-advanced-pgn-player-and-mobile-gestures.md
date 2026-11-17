@@ -22,6 +22,6 @@ Enhance the `Solution` modal player with full navigation controls (first/last mo
    - Detect horizontal touch swipes (`touchstart` / `touchend`) on the board/viewer area to step backward (`swipe right`) or forward (`swipe left`).
 
 ## Acceptance Criteria
-- [ ] Users can jump to start/end, toggle autoplay, and flip the board via buttons or keyboard.
-- [ ] Variations are indented and collapsible instead of breaking the main-line reading flow.
-- [ ] Swiping left/right on mobile steps through the solution moves.
+- [x] Users can jump to start/end, toggle autoplay, and flip the board via buttons or keyboard.
+- [x] Variations are indented and collapsible instead of breaking the main-line reading flow.
+- [x] Swiping left/right on mobile steps through the solution moves.
