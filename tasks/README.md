@@ -41,3 +41,4 @@ See `tasks/ui/recommendations.md` and `tasks/ui/ui_ex.png` for details.
 | [TASK-023](TASK-023-endgame-create-and-admin-user-edit.md) | Complete `endgame/create`, `piece_pattern` UI, and `user/edit` Route | Medium | Functional Stubs |
 | [TASK-024](TASK-024-ui-favorites-history-and-dark-mode.md) | Favorites, Viewing History, Dark Mode, and Moderator Cook Toggle | Low | `ui/recommendations.md` §6 |
 | [TASK-025](TASK-025-analytics-access-and-permissions.md) | Enable Admin Access and Enforce Permissions for `analytics` Module | High | Module Access & Auth |
+| [TASK-026](TASK-026-analytics-extensions.md) | Extend `analytics` Module with Data Integrity, Duplicate Detection, Author Merging, and Search Insights | Medium | Analytics Expansion |

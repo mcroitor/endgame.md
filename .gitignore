@@ -5,3 +5,5 @@
 /site/database/
 __tmp__/
 /site/config.php
+/vendor/
+/.phpunit.cache/
