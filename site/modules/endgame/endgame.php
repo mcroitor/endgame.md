@@ -36,9 +36,39 @@ class endgame
             header("location:" . \config::www);
             exit();
         }
-        \config::$logger->warn("not implemented yet");
         $template = \facade::template("endgame-form.template.php", self::TEMPLATES_DIR);
         return $template->fill(["path" => \config::www . "/modules/articles"])->value();
+    }
+
+    private static function analyzeFen(string $fen): array
+    {
+        $epd = explode(" ", trim($fen))[0] ?? "";
+        $whitePieces = 0;
+        $blackPieces = 0;
+        $pieceStat = [
+            "Q" => 0, "R" => 0, "B" => 0, "N" => 0, "P" => 0,
+            "q" => 0, "r" => 0, "b" => 0, "n" => 0, "p" => 0,
+        ];
+        for ($i = 0; $i < strlen($epd); $i++) {
+            $ch = $epd[$i];
+            if (str_contains("KQRBNP", $ch)) {
+                $whitePieces++;
+            } elseif (str_contains("kqrbnp", $ch)) {
+                $blackPieces++;
+            }
+            if (isset($pieceStat[$ch])) {
+                $pieceStat[$ch]++;
+            }
+        }
+        $piecePattern = "";
+        foreach ($pieceStat as $piece => $count) {
+            $piecePattern .= str_repeat($piece, $count);
+        }
+        return [
+            "whitep" => $whitePieces,
+            "blackp" => $blackPieces,
+            "piece_pattern" => $piecePattern,
+        ];
     }
 
     #[\mc\route('endgame/create')]
@@ -49,8 +79,53 @@ class endgame
             header("location:" . \config::www);
             exit();
         }
-        \config::$logger->warn("not implemented yet");
-        return null;
+
+        $fen = trim((string) (filter_input(INPUT_POST, "fen") ?? ""));
+        $author = trim((string) (filter_input(INPUT_POST, "author") ?? ""));
+        $date = trim((string) (filter_input(INPUT_POST, "date") ?? ""));
+        $source = trim((string) (filter_input(INPUT_POST, "source") ?? ""));
+        $stipulation = trim((string) (filter_input(INPUT_POST, "stipulation") ?? "*"));
+        $theme = trim((string) (filter_input(INPUT_POST, "theme") ?? ""));
+        $moves = trim((string) (filter_input(INPUT_POST, "moves") ?? ""));
+
+        if ($fen === "" || $author === "") {
+            header("location:" . \config::www . "/?q=endgame/new");
+            exit();
+        }
+
+        $fenMeta = self::analyzeFen($fen);
+        $data = [
+            \meta\endgame::SOURCE => $source,
+            \meta\endgame::AUTHOR => $author,
+            \meta\endgame::DATE => $date !== "" ? $date : date("Y"),
+            \meta\endgame::STIPULATION => $stipulation !== "" ? $stipulation : "*",
+            \meta\endgame::FEN => $fen,
+            \meta\endgame::AWARD => "",
+            \meta\endgame::WHITEP => $fenMeta["whitep"],
+            \meta\endgame::BLACKP => $fenMeta["blackp"],
+            \meta\endgame::COMMENTARY => "",
+            \meta\endgame::COOK => 0,
+            \meta\endgame::PIECE_PATTERN => $fenMeta["piece_pattern"],
+            \meta\endgame::THEME => $theme !== "" ? $theme : "unknown",
+        ];
+
+        $db = \config::$db;
+        $pid = $db->insert("endgame", $data);
+
+        $resultTag = $stipulation === "White wins" ? "1-0" : ($stipulation === "Draw" ? "1/2-1/2" : "*");
+        $rawPgn = sprintf(
+            "[Event \"%s\"]\n[Site \"?\"]\n[Date \"%s\"]\n[Round \"-\"]\n[White \"%s\"]\n[Black \"?\"]\n[Result \"%s\"]\n[FEN \"%s\"]\n\n%s",
+            str_replace('"', "'", $source !== "" ? $source : "endgame.md"),
+            str_replace('"', "'", $data[\meta\endgame::DATE]),
+            str_replace('"', "'", $author),
+            $resultTag,
+            str_replace('"', "'", $fen),
+            $moves !== "" ? $moves : $resultTag
+        );
+        $db->insert("raw", ["id" => $pid, "data" => $rawPgn]);
+
+        header("location:" . \config::www . "/?pid=" . urlencode((string) $pid));
+        exit();
     }
 
     #[\mc\route('endgame/import')]
