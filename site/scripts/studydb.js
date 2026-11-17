@@ -603,9 +603,6 @@ async function pgnLive(pid, triggerEl = null) {
         }
         currentModalPgn = pgn.data;
         currentModalFen = study ? String(study["#fen#"] || "") : "";
-        if (modeSwitch && window.EndgameSolver) {
-            modeSwitch.classList.remove("hidden");
-        }
         viewer.innerHTML = "";
         const mount = document.createElement("div");
         viewer.appendChild(mount);
@@ -618,6 +615,10 @@ async function pgnLive(pid, triggerEl = null) {
             }
         };
         LichessPgnViewer(mount, config);
+        if (modeSwitch && window.EndgameSolver) {
+            modeSwitch.classList.remove("hidden");
+            setModalMode("solve");
+        }
     } catch (err) {
         viewer.innerHTML = `<div class="status-message status-error">Failed to load solution (${escapeHtml(err.message)}).</div>`;
     }

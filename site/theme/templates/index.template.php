@@ -41,8 +41,8 @@
             <div class="titlebar">
                 <span class="titlebar-label" id="pgnlive-title">Solution</span>
                 <div id="modal-mode-switch" class="modal-mode-switch hidden" role="group" aria-label="Viewer mode">
-                    <button type="button" id="mode-view" class="mode-btn active">View solution</button>
-                    <button type="button" id="mode-solve" class="mode-btn">Solve yourself</button>
+                    <button type="button" id="mode-solve" class="mode-btn active">Solve yourself</button>
+                    <button type="button" id="mode-view" class="mode-btn">View solution</button>
                 </div>
                 <button type="button" id="pgnlive-close" class="close-icon" aria-label="Close solution">&times;</button>
             </div>
