@@ -1151,3 +1151,41 @@ input[type="button"].button-primary:focus {
         grid-template-columns: 1fr;
     }
 }
+
+/* Analytics Dashboard Grid */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.8rem;
+    margin-top: 1.6rem;
+}
+
+.analytics-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.6rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.analytics-card-title {
+    margin: 0 0 0.6rem;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.analytics-card-desc {
+    margin: 0 0 1.4rem;
+    font-size: 1.35rem;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.analytics-card .button {
+    align-self: flex-start;
+    margin: 0;
+}

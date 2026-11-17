@@ -587,16 +587,56 @@ class analytics
             header("location:" . \config::www);
             exit();
         }
-        $html = "<h3>Analytics links</h3>";
-        $links = \mc\router::getRoutes();
-        $links = array_filter($links, function($link) {
-            return str_contains($link, "analytics");
-        });
-        $html .= "<div class='row'><div class='twelve columns'><ul>";
-        foreach ($links as $link) {
-            $html .= "<li><a href='<!-- www -->/?q={$link}'>{$link}</a></li>";
+        $tools = [
+            [
+                "route" => "analytics/insights",
+                "title" => "Database & Search Insights",
+                "desc" => "Study counts, cooked ratio, decade breakdown, and top searched authors.",
+                "primary" => true,
+            ],
+            [
+                "route" => "analytics/duplicates",
+                "title" => "Duplicate Positions",
+                "desc" => "Find studies with identical FEN positions and remove duplicates safely.",
+                "primary" => false,
+            ],
+            [
+                "route" => "analytics/integrity",
+                "title" => "Database Integrity",
+                "desc" => "Check missing PGN records, orphaned raw rows, and piece-count mismatches.",
+                "primary" => false,
+            ],
+            [
+                "route" => "analytics/authors",
+                "title" => "Broken Authors",
+                "desc" => "Review and fix studies whose author names start with non-alphabetic characters.",
+                "primary" => false,
+            ],
+            [
+                "route" => "analytics/merge-authors",
+                "title" => "Merge Authors",
+                "desc" => "Consolidate duplicate author spellings and view top composers by count.",
+                "primary" => false,
+            ],
+            [
+                "route" => "analytics/fix",
+                "title" => "Auto-Fix Results & Patterns",
+                "desc" => "Normalize legacy result strings (1-0, 1/2-1/2) and rebuild piece patterns.",
+                "primary" => false,
+            ],
+        ];
+
+        $html = "<h3>Analytics &amp; Data Tools</h3>";
+        $html .= "<div class='analytics-grid'>";
+        foreach ($tools as $tool) {
+            $btnClass = $tool["primary"] ? "button button-primary" : "button";
+            $html .= "<article class='analytics-card'>";
+            $html .= "<h4 class='analytics-card-title'>{$tool['title']}</h4>";
+            $html .= "<p class='analytics-card-desc'>{$tool['desc']}</p>";
+            $html .= "<a href='<!-- www -->/?q={$tool['route']}' class='{$btnClass}'>Open</a>";
+            $html .= "</article>";
         }
-        $html .= "</ul></div></div>";
+        $html .= "</div>";
         return $html;
     }
 }
