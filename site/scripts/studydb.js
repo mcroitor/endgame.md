@@ -2,6 +2,9 @@ const PAGE_SIZE = 12;
 const APP_BASE = (document.querySelector('meta[name="app-base"]')?.getAttribute("content") || "").replace(/\/+$/, "");
 const currentStudiesMap = new Map();
 let lastFocusedElement = null;
+let currentModalPgn = "";
+let currentModalFen = "";
+let solveMountedForCurrent = false;
 
 /**
  * Shortcut for getting HTML Element by ID.
@@ -502,15 +505,50 @@ function fallbackCopy(text, onDone) {
     document.body.removeChild(ta);
 }
 
+function setModalMode(mode) {
+    const viewer = get("pgnlive");
+    const solveBox = get("solve-workspace");
+    const btnView = get("mode-view");
+    const btnSolve = get("mode-solve");
+    if (!viewer || !solveBox) return;
+
+    if (mode === "solve") {
+        viewer.classList.add("hidden");
+        solveBox.classList.remove("hidden");
+        if (btnView) btnView.classList.remove("active");
+        if (btnSolve) btnSolve.classList.add("active");
+        if (!solveMountedForCurrent && window.EndgameSolver && currentModalPgn) {
+            window.EndgameSolver.mount(solveBox, currentModalPgn, currentModalFen, () => setModalMode("view"));
+            solveMountedForCurrent = true;
+        }
+    } else {
+        solveBox.classList.add("hidden");
+        viewer.classList.remove("hidden");
+        if (btnSolve) btnSolve.classList.remove("active");
+        if (btnView) btnView.classList.add("active");
+    }
+}
+
 async function pgnLive(pid, triggerEl = null) {
     const backdrop = get("pgnlive-backdrop");
     const viewer = get("pgnlive");
+    const solveBox = get("solve-workspace");
+    const modeSwitch = get("modal-mode-switch");
     const metaBox = get("pgnlive-meta");
     const actionsBox = get("pgnlive-actions");
     const closeBtn = get("pgnlive-close");
     if (!backdrop || !viewer) return false;
 
     lastFocusedElement = triggerEl || document.activeElement;
+    currentModalPgn = "";
+    currentModalFen = "";
+    solveMountedForCurrent = false;
+    if (modeSwitch) modeSwitch.classList.add("hidden");
+    if (solveBox) {
+        solveBox.innerHTML = "";
+        solveBox.classList.add("hidden");
+    }
+    setModalMode("view");
 
     const study = currentStudiesMap.get(String(pid));
     if (metaBox) {
@@ -563,6 +601,8 @@ async function pgnLive(pid, triggerEl = null) {
             viewer.innerHTML = '<div class="status-message status-error">PGN data is not available for this study.</div>';
             return false;
         }
+        currentModalPgn = pgn.data;
+        currentModalFen = study ? String(study["#fen#"] || "") : "";
         viewer.innerHTML = "";
         const mount = document.createElement("div");
         viewer.appendChild(mount);
@@ -575,6 +615,10 @@ async function pgnLive(pid, triggerEl = null) {
             }
         };
         LichessPgnViewer(mount, config);
+        if (modeSwitch && window.EndgameSolver) {
+            modeSwitch.classList.remove("hidden");
+            setModalMode("solve");
+        }
     } catch (err) {
         viewer.innerHTML = `<div class="status-message status-error">Failed to load solution (${escapeHtml(err.message)}).</div>`;
     }
@@ -584,10 +628,23 @@ async function pgnLive(pid, triggerEl = null) {
 function closePgnModal() {
     const backdrop = get("pgnlive-backdrop");
     const viewer = get("pgnlive");
+    const solveBox = get("solve-workspace");
+    const modeSwitch = get("modal-mode-switch");
     const metaBox = get("pgnlive-meta");
     const actionsBox = get("pgnlive-actions");
+    currentModalPgn = "";
+    currentModalFen = "";
+    solveMountedForCurrent = false;
     if (backdrop) backdrop.classList.add("hidden");
-    if (viewer) viewer.innerHTML = "";
+    if (modeSwitch) modeSwitch.classList.add("hidden");
+    if (viewer) {
+        viewer.innerHTML = "";
+        viewer.classList.remove("hidden");
+    }
+    if (solveBox) {
+        solveBox.innerHTML = "";
+        solveBox.classList.add("hidden");
+    }
     if (metaBox) {
         metaBox.innerHTML = "";
         metaBox.classList.add("hidden");
@@ -784,6 +841,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (closeBtn) {
         closeBtn.addEventListener("click", closePgnModal);
+    }
+    const modeViewBtn = get("mode-view");
+    const modeSolveBtn = get("mode-solve");
+    if (modeViewBtn) {
+        modeViewBtn.addEventListener("click", () => setModalMode("view"));
+    }
+    if (modeSolveBtn) {
+        modeSolveBtn.addEventListener("click", () => setModalMode("solve"));
     }
     document.addEventListener("keydown", (e) => {
         if (!backdrop || backdrop.classList.contains("hidden")) return;

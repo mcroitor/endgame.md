@@ -25,6 +25,6 @@ Add an interactive "Solve Yourself" mode inside the `Solution` modal where moves
    - Add a `Show solution` button to reveal the full PGN move tree at any time.
 
 ## Acceptance Criteria
-- [ ] Switching to `Solve yourself` hides the solution moves and lets the user play moves on the board.
-- [ ] Correct moves automatically play the opponent's response until the study is solved.
-- [ ] `Hint` and `Show solution` buttons work reliably and restore the full viewer.
+- [x] Switching to `Solve yourself` hides the solution moves and lets the user play moves on the board.
+- [x] Correct moves automatically play the opponent's response until the study is solved.
+- [x] `Hint` and `Show solution` buttons work reliably and restore the full viewer.
