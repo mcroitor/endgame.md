@@ -24,7 +24,7 @@ Expand the `analytics` module beyond basic stipulation/pattern/author fixes into
    - Replace the `GET` delete link in `analytics/authors` with a `POST` form protected by a confirmation prompt and CSRF token (`user::require_csrf()`).
 
 ## Acceptance Criteria
-- [ ] Admins can view duplicate positions and `endgame`/`raw` integrity mismatches from `/?q=analytics/links`.
-- [ ] Admins can merge duplicate author names in bulk and see study context when editing broken authors.
-- [ ] `/?q=analytics/insights` displays query trends and database breakdowns from `statistic` and `endgame`.
-- [ ] Deleting a study via `analytics` requires a `POST` request with a valid CSRF token.
+- [x] Admins can view duplicate positions and `endgame`/`raw` integrity mismatches from `/?q=analytics/links`.
+- [x] Admins can merge duplicate author names in bulk and see study context when editing broken authors.
+- [x] `/?q=analytics/insights` displays query trends and database breakdowns from `statistic` and `endgame`.
+- [x] Deleting a study via `analytics` requires a `POST` request with a valid CSRF token.
