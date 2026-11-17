@@ -57,7 +57,13 @@
 
             <div class="filter-group">
                 <label for="piece_pattern" class="filter-label">Piece pattern</label>
-                <input type="text" id="piece_pattern" class="u-full-width" placeholder="e.g. Rp, Qp, P" title="Material without kings: uppercase = White (QRBNP), lowercase = Black (qrbnp)" />
+                <div class="range-inputs">
+                    <input type="text" id="piece_pattern" class="u-full-width" placeholder="e.g. Rp, Qp, P" title="Material without kings: uppercase = White (QRBNP), lowercase = Black (qrbnp)" />
+                    <select id="piece_mode" aria-label="Piece pattern match mode">
+                        <option value="exact">Exact</option>
+                        <option value="contains">Includes</option>
+                    </select>
+                </div>
             </div>
 
             <div class="filter-group">

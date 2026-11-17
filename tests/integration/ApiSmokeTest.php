@@ -165,6 +165,20 @@ final class ApiSmokeTest extends TestCase
         $empty = $post(['author' => 'NonExistentComposerXYZ']);
         $this->assertSame(0, $empty['stat']);
         $this->assertSame([], $empty['html']);
+
+        // Piece pattern: exact (canonicalized) vs contains (case-sensitive)
+        $exact = $post(['piece_pattern' => 'kR', 'piece_mode' => 'exact', 'wmin' => 1, 'wmax' => 7, 'bmin' => 1, 'bmax' => 7]);
+        // Database has 'KRk' for pid=2 and 'KPk' for pid=1; 'kR' canonicalizes to 'R' (without kings) -> 0
+        $this->assertSame(0, $exact['stat']);
+
+        // Exact 'R' matches if stored without kings; let's test 'KRk' with contains 'R' (matches pid=2 only, not pid=1 'KPk')
+        $containsWhiteRook = $post(['piece_pattern' => 'R', 'piece_mode' => 'contains', 'wmin' => 1, 'wmax' => 7, 'bmin' => 1, 'bmax' => 7]);
+        $this->assertSame(1, $containsWhiteRook['stat']);
+        $this->assertSame('Troitzky, Alexey', $containsWhiteRook['html'][0]['#author#']);
+
+        // Case-sensitivity: lowercase 'r' (black rook) must not match 'KRk'
+        $containsBlackRook = $post(['piece_pattern' => 'r', 'piece_mode' => 'contains', 'wmin' => 1, 'wmax' => 7, 'bmin' => 1, 'bmax' => 7]);
+        $this->assertSame(0, $containsBlackRook['stat']);
     }
 
     public function testApiDataHandlesInvalidJsonGracefully(): void

@@ -161,9 +161,29 @@ class pdf
             $where[] = "theme LIKE ?";
             $queryParams[] = "%{$theme}%";
         }
+        $piece_pattern_raw = (string) (self::getPiecesPattern() ?? "");
+        $piece_pattern = preg_replace('/[^QRBNPqrbnp]/', '', $piece_pattern_raw);
         if ($piece_pattern !== "") {
-            $where[] = "piece_pattern = ?";
-            $queryParams[] = $piece_pattern;
+            $order = "QRBNPqrbnp";
+            $canonical = "";
+            $glob = "*";
+            for ($i = 0; $i < strlen($order); $i++) {
+                $ch = $order[$i];
+                $cnt = substr_count($piece_pattern, $ch);
+                if ($cnt > 0) {
+                    $rep = str_repeat($ch, $cnt);
+                    $canonical .= $rep;
+                    $glob .= $rep . "*";
+                }
+            }
+            $piece_mode = (string) (filter_input(INPUT_GET, "piece_mode", FILTER_DEFAULT, ["options" => ["default" => "exact"]]) ?? "exact");
+            if ($piece_mode === "contains") {
+                $where[] = "piece_pattern GLOB ?";
+                $queryParams[] = $glob;
+            } else {
+                $where[] = "piece_pattern = ?";
+                $queryParams[] = $canonical;
+            }
         }
         $cook = (string) (self::getCook() ?? "all");
         if ($cook === "1" || $cook === "true") {

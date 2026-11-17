@@ -64,10 +64,33 @@ function get_data(array $params)
         $where[] = "theme LIKE ?";
         $params[] = "%{$theme}%";
     }
-    $piecePattern = (string) ($request->piece_pattern ?? "");
+    $piecePatternRaw = (string) ($request->piece_pattern ?? "");
+    $piecePattern = preg_replace('/[^QRBNPqrbnp]/', '', $piecePatternRaw);
     if ($piecePattern !== "") {
-        $where[] = "piece_pattern = ?";
-        $params[] = $piecePattern;
+        $order = "QRBNPqrbnp";
+        $counts = [];
+        for ($i = 0; $i < strlen($order); $i++) {
+            $ch = $order[$i];
+            $cnt = substr_count($piecePattern, $ch);
+            if ($cnt > 0) {
+                $counts[$ch] = $cnt;
+            }
+        }
+        $canonical = "";
+        $glob = "*";
+        foreach ($counts as $ch => $cnt) {
+            $rep = str_repeat($ch, $cnt);
+            $canonical .= $rep;
+            $glob .= $rep . "*";
+        }
+        $pieceMode = (string) ($request->piece_mode ?? "exact");
+        if ($pieceMode === "contains") {
+            $where[] = "piece_pattern GLOB ?";
+            $params[] = $glob;
+        } else {
+            $where[] = "piece_pattern = ?";
+            $params[] = $canonical;
+        }
     }
     $cook = $request->cook ?? "all";
     if ($cook === true || $cook === "1" || $cook === 1) {
