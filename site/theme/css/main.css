@@ -770,9 +770,16 @@ input[type="button"].button-primary:focus {
 /* Lichess PGN Viewer overrides — unified newspaper board style */
 #pgnlive .lpv.lpv--moves-right {
     grid-template-columns: minmax(260px, min(400px, 52vh)) minmax(220px, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "board side";
 }
 
-#pgnlive .lpv__player {
+#pgnlive .lpv:focus {
+    outline: none;
+}
+
+#pgnlive .lpv__player,
+#pgnlive .lpv__controls {
     display: none;
 }
 

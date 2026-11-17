@@ -6,6 +6,7 @@ let currentModalPgn = "";
 let currentModalFen = "";
 let solveMountedForCurrent = false;
 let autoplayTimer = null;
+let lpvCtrl = null;
 
 /**
  * Shortcut for getting HTML Element by ID.
@@ -546,10 +547,17 @@ function stopAutoplay() {
     }
 }
 
-function triggerLpvControl(selector) {
-    const btn = document.querySelector(`#pgnlive ${selector}`);
-    if (btn && !btn.disabled) {
-        btn.click();
+function triggerLpvControl(action) {
+    if (!lpvCtrl) return false;
+    if (action === "flip") {
+        lpvCtrl.flip();
+        return true;
+    }
+    if (["first", "prev", "next", "last"].includes(action)) {
+        if (typeof lpvCtrl.canGoTo === "function" && !lpvCtrl.canGoTo(action)) {
+            return false;
+        }
+        lpvCtrl.goTo(action);
         return true;
     }
     return false;
@@ -566,7 +574,7 @@ function toggleAutoplay() {
         playBtn.classList.add("active");
     }
     autoplayTimer = setInterval(() => {
-        const moved = triggerLpvControl(".lpv__controls__goto--next");
+        const moved = triggerLpvControl("next");
         if (!moved) {
             stopAutoplay();
         }
@@ -577,12 +585,12 @@ function renderPlayerBar() {
     const bar = get("pgnlive-player-bar");
     if (!bar) return;
     bar.innerHTML = `
-        <button type="button" class="button pgn-ctrl-btn" data-lpv=".lpv__controls__goto--first" title="First move (Home)">|&lt;</button>
-        <button type="button" class="button pgn-ctrl-btn" data-lpv=".lpv__controls__goto--prev" title="Previous move (&larr;)">&lt;</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="first" title="First move (Home)">|&lt;</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="prev" title="Previous move (&larr;)">&lt;</button>
         <button type="button" id="pgn-play-btn" class="button pgn-ctrl-btn" title="Play / Pause (Space)">&#9654; Play</button>
-        <button type="button" class="button pgn-ctrl-btn" data-lpv=".lpv__controls__goto--next" title="Next move (&rarr;)">&gt;</button>
-        <button type="button" class="button pgn-ctrl-btn" data-lpv=".lpv__controls__goto--last" title="Last move (End)">&gt;|</button>
-        <button type="button" class="button pgn-ctrl-btn" data-lpv=".lpv__menu__flip" title="Flip board (f)">&#8645; Flip</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="next" title="Next move (&rarr;)">&gt;</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="last" title="Last move (End)">&gt;|</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="flip" title="Flip board (f)">&#8645; Flip</button>
     `;
 }
 
@@ -722,7 +730,7 @@ async function pgnLive(pid, triggerEl = null) {
                 getPgn: { enabled: true, fileName: `endgame_${pid}.pgn` }
             }
         };
-        LichessPgnViewer(mount, config);
+        lpvCtrl = LichessPgnViewer(mount, config);
         renderPlayerBar();
         enhancePgnVariations(viewer);
         if (modeSwitch && window.EndgameSolver) {
@@ -749,6 +757,7 @@ function closePgnModal() {
     currentModalPgn = "";
     currentModalFen = "";
     solveMountedForCurrent = false;
+    lpvCtrl = null;
     if (backdrop) backdrop.classList.add("hidden");
     if (modeSwitch) modeSwitch.classList.add("hidden");
     if (playerBar) {
@@ -977,10 +986,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 toggleAutoplay();
                 return;
             }
-            const ctrlBtn = e.target.closest(".pgn-ctrl-btn[data-lpv]");
+            const ctrlBtn = e.target.closest(".pgn-ctrl-btn[data-action]");
             if (ctrlBtn) {
                 stopAutoplay();
-                triggerLpvControl(ctrlBtn.getAttribute("data-lpv"));
+                triggerLpvControl(ctrlBtn.getAttribute("data-action"));
             }
         });
     }
@@ -1002,9 +1011,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
                 stopAutoplay();
                 if (dx < 0) {
-                    triggerLpvControl(".lpv__controls__goto--next");
+                    triggerLpvControl("next");
                 } else {
-                    triggerLpvControl(".lpv__controls__goto--prev");
+                    triggerLpvControl("prev");
                 }
             }
         }, { passive: true });
@@ -1022,22 +1031,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (e.key === "ArrowLeft") {
             stopAutoplay();
-            if (triggerLpvControl(".lpv__controls__goto--prev")) e.preventDefault();
+            if (triggerLpvControl("prev")) e.preventDefault();
         } else if (e.key === "ArrowRight") {
             stopAutoplay();
-            if (triggerLpvControl(".lpv__controls__goto--next")) e.preventDefault();
+            if (triggerLpvControl("next")) e.preventDefault();
         } else if (e.key === "Home") {
             stopAutoplay();
-            if (triggerLpvControl(".lpv__controls__goto--first")) e.preventDefault();
+            if (triggerLpvControl("first")) e.preventDefault();
         } else if (e.key === "End") {
             stopAutoplay();
-            if (triggerLpvControl(".lpv__controls__goto--last")) e.preventDefault();
+            if (triggerLpvControl("last")) e.preventDefault();
         } else if (e.key === " ") {
             e.preventDefault();
             toggleAutoplay();
         } else if (e.key === "f" || e.key === "F") {
             e.preventDefault();
-            triggerLpvControl(".lpv__menu__flip");
+            triggerLpvControl("flip");
         }
     });
 
