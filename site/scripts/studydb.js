@@ -428,7 +428,7 @@ async function getPosition(page, pushUrl = true) {
         piece_pattern: patternMake(),
         piece_mode: get("piece_mode") ? get("piece_mode").value : "exact",
         stipulation: get("stipulation").value,
-        theme: get("theme").value,
+        theme: get("theme") ? get("theme").value : "-",
         from_date: get("from_date").value,
         to_date: get("to_date").value,
         cook: getSelectedCook(),
@@ -703,7 +703,7 @@ function getPdf() {
         piece_pattern: patternMake(),
         piece_mode: get("piece_mode") ? get("piece_mode").value : "exact",
         stipulation: get("stipulation").value,
-        theme: get("theme").value,
+        theme: get("theme") ? get("theme").value : "-",
         from_date: get("from_date").value,
         to_date: get("to_date").value,
         cook: getSelectedCook()

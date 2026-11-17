@@ -48,13 +48,6 @@
                 </select>
             </div>
 
-            <div class="filter-group">
-                <label for="theme" class="filter-label">Theme</label>
-                <select id="theme" class="u-full-width">
-                    <!-- themes -->
-                </select>
-            </div>
-
             <div class="filter-group filter-group-wide">
                 <div class="piece-matrix-header">
                     <span class="filter-label">Pieces (material without kings)</span>

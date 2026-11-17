@@ -242,18 +242,8 @@ class endgame
     public static function search_form()
     {
         $template = \facade::template("endgame-search-form.template.php", self::TEMPLATES_DIR);
-        $themesHtml = "<option value='-'>Any theme</option>";
-        $themes = \config::$db->unique_values(\meta\endgame::__name__, \meta\endgame::THEME);
-        foreach ($themes as $row) {
-            $theme = $row[\meta\endgame::THEME] ?? "";
-            if ($theme !== "" && $theme !== "-") {
-                $escaped = htmlspecialchars($theme, ENT_QUOTES, "UTF-8");
-                $themesHtml .= "<option value='{$escaped}'>{$escaped}</option>";
-            }
-        }
         return $template->fill([
             "last-date" => date("Y"),
-            "themes" => $themesHtml,
         ])->value();
     }
 }
