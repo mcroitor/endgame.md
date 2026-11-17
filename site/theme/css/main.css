@@ -767,13 +767,50 @@ input[type="button"].button-primary:focus {
     border-radius: 6px;
 }
 
-/* Lichess PGN Viewer overrides */
+/* Lichess PGN Viewer overrides — unified newspaper board style */
 #pgnlive .lpv.lpv--moves-right {
     grid-template-columns: minmax(260px, min(400px, 52vh)) minmax(220px, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "board side";
 }
 
-#pgnlive .lpv__player {
+#pgnlive .lpv:focus {
+    outline: none;
+}
+
+#pgnlive .lpv__player,
+#pgnlive .lpv__controls {
     display: none;
+}
+
+#pgnlive .lpv__board {
+    border: 2px solid #111827;
+    border-radius: 2px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+#pgnlive cg-board {
+    background-color: #ffffff;
+    background-image:
+        conic-gradient(
+            #ffffff 0deg 90deg,
+            transparent 90deg 180deg,
+            #ffffff 180deg 270deg,
+            transparent 270deg 360deg
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            #c7c7c7 0,
+            #c7c7c7 1.5px,
+            #efefef 1.5px,
+            #efefef 5px
+        );
+    background-size: 25% 25%, 100% 100%;
+}
+
+#pgnlive cg-board square.last-move {
+    background-color: rgba(134, 239, 172, 0.6) !important;
 }
 
 #pgnlive .lpv__moves {
@@ -782,6 +819,66 @@ input[type="button"].button-primary:focus {
 
 #pgnlive .lpv__side {
     max-width: 340px;
+}
+
+#pgnlive .lpv__moves move.current {
+    background: #1eaedb;
+    color: #ffffff;
+    border-radius: 3px;
+    padding: 0 4px;
+}
+
+#pgnlive .lpv__moves > variation {
+    display: block;
+    margin: 0.4rem 0 0.5rem 1rem;
+    padding-left: 0.8rem;
+    border-left: 2px solid #cbd5e1;
+    color: #475569;
+}
+
+#pgnlive .lpv__moves > variation.lpv-var-collapsed {
+    display: none;
+}
+
+.lpv-var-toggle {
+    display: inline-block;
+    margin: 0.25rem 0 0.35rem 0.6rem;
+    padding: 0.1rem 0.6rem;
+    height: auto;
+    line-height: 1.5;
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #334155;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pgnlive-player-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pgn-ctrl-btn {
+    margin: 0;
+    padding: 0 1.1rem;
+    height: 3.2rem;
+    line-height: 3rem;
+    font-size: 1.25rem;
+    text-transform: none;
+    letter-spacing: 0;
+    border-radius: 6px;
+}
+
+.pgn-ctrl-btn.active {
+    background: #1eaedb;
+    border-color: #1eaedb;
+    color: #ffffff;
 }
 
 #pgnlive coords {

@@ -5,6 +5,8 @@ let lastFocusedElement = null;
 let currentModalPgn = "";
 let currentModalFen = "";
 let solveMountedForCurrent = false;
+let autoplayTimer = null;
+let lpvCtrl = null;
 
 /**
  * Shortcut for getting HTML Element by ID.
@@ -533,15 +535,100 @@ function fallbackCopy(text, onDone) {
     document.body.removeChild(ta);
 }
 
+function stopAutoplay() {
+    if (autoplayTimer !== null) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+    }
+    const playBtn = get("pgn-play-btn");
+    if (playBtn) {
+        playBtn.textContent = "\u25B6 Play";
+        playBtn.classList.remove("active");
+    }
+}
+
+function triggerLpvControl(action) {
+    if (!lpvCtrl) return false;
+    if (action === "flip") {
+        lpvCtrl.flip();
+        return true;
+    }
+    if (["first", "prev", "next", "last"].includes(action)) {
+        if (typeof lpvCtrl.canGoTo === "function" && !lpvCtrl.canGoTo(action)) {
+            return false;
+        }
+        lpvCtrl.goTo(action);
+        return true;
+    }
+    return false;
+}
+
+function toggleAutoplay() {
+    const playBtn = get("pgn-play-btn");
+    if (autoplayTimer !== null) {
+        stopAutoplay();
+        return;
+    }
+    if (playBtn) {
+        playBtn.textContent = "\u275A\u275A Pause";
+        playBtn.classList.add("active");
+    }
+    autoplayTimer = setInterval(() => {
+        const moved = triggerLpvControl("next");
+        if (!moved) {
+            stopAutoplay();
+        }
+    }, 1100);
+}
+
+function renderPlayerBar() {
+    const bar = get("pgnlive-player-bar");
+    if (!bar) return;
+    bar.innerHTML = `
+        <button type="button" class="button pgn-ctrl-btn" data-action="first" title="First move (Home)">|&lt;</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="prev" title="Previous move (&larr;)">&lt;</button>
+        <button type="button" id="pgn-play-btn" class="button pgn-ctrl-btn" title="Play / Pause (Space)">&#9654; Play</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="next" title="Next move (&rarr;)">&gt;</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="last" title="Last move (End)">&gt;|</button>
+        <button type="button" class="button pgn-ctrl-btn" data-action="flip" title="Flip board (f)">&#8645; Flip</button>
+    `;
+}
+
+function enhancePgnVariations(viewerRoot) {
+    if (!viewerRoot) return;
+    const variations = viewerRoot.querySelectorAll(".lpv__moves > variation");
+    variations.forEach((variation) => {
+        if (variation.previousElementSibling && variation.previousElementSibling.classList.contains("lpv-var-toggle")) {
+            return;
+        }
+        const moveCount = variation.querySelectorAll("move").length;
+        if (moveCount < 2) return;
+
+        variation.classList.add("lpv-var-collapsed");
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "lpv-var-toggle";
+        toggle.textContent = `Show variation (${moveCount} moves)`;
+        toggle.addEventListener("click", () => {
+            const collapsed = variation.classList.toggle("lpv-var-collapsed");
+            toggle.textContent = collapsed ? `Show variation (${moveCount} moves)` : "Hide variation";
+        });
+        variation.parentNode.insertBefore(toggle, variation);
+    });
+}
+
 function setModalMode(mode) {
     const viewer = get("pgnlive");
+    const playerBar = get("pgnlive-player-bar");
     const solveBox = get("solve-workspace");
     const btnView = get("mode-view");
     const btnSolve = get("mode-solve");
     if (!viewer || !solveBox) return;
 
     if (mode === "solve") {
+        stopAutoplay();
         viewer.classList.add("hidden");
+        if (playerBar) playerBar.classList.add("hidden");
         solveBox.classList.remove("hidden");
         if (btnView) btnView.classList.remove("active");
         if (btnSolve) btnSolve.classList.add("active");
@@ -552,6 +639,7 @@ function setModalMode(mode) {
     } else {
         solveBox.classList.add("hidden");
         viewer.classList.remove("hidden");
+        if (playerBar && currentModalPgn) playerBar.classList.remove("hidden");
         if (btnSolve) btnSolve.classList.remove("active");
         if (btnView) btnView.classList.add("active");
     }
@@ -642,10 +730,14 @@ async function pgnLive(pid, triggerEl = null) {
                 getPgn: { enabled: true, fileName: `endgame_${pid}.pgn` }
             }
         };
-        LichessPgnViewer(mount, config);
+        lpvCtrl = LichessPgnViewer(mount, config);
+        renderPlayerBar();
+        enhancePgnVariations(viewer);
         if (modeSwitch && window.EndgameSolver) {
             modeSwitch.classList.remove("hidden");
             setModalMode("solve");
+        } else if (get("pgnlive-player-bar")) {
+            get("pgnlive-player-bar").classList.remove("hidden");
         }
     } catch (err) {
         viewer.innerHTML = `<div class="status-message status-error">Failed to load solution (${escapeHtml(err.message)}).</div>`;
@@ -654,8 +746,10 @@ async function pgnLive(pid, triggerEl = null) {
 }
 
 function closePgnModal() {
+    stopAutoplay();
     const backdrop = get("pgnlive-backdrop");
     const viewer = get("pgnlive");
+    const playerBar = get("pgnlive-player-bar");
     const solveBox = get("solve-workspace");
     const modeSwitch = get("modal-mode-switch");
     const metaBox = get("pgnlive-meta");
@@ -663,8 +757,13 @@ function closePgnModal() {
     currentModalPgn = "";
     currentModalFen = "";
     solveMountedForCurrent = false;
+    lpvCtrl = null;
     if (backdrop) backdrop.classList.add("hidden");
     if (modeSwitch) modeSwitch.classList.add("hidden");
+    if (playerBar) {
+        playerBar.innerHTML = "";
+        playerBar.classList.add("hidden");
+    }
     if (viewer) {
         viewer.innerHTML = "";
         viewer.classList.remove("hidden");
@@ -879,21 +978,75 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modeSolveBtn) {
         modeSolveBtn.addEventListener("click", () => setModalMode("solve"));
     }
+
+    const playerBar = get("pgnlive-player-bar");
+    if (playerBar) {
+        playerBar.addEventListener("click", (e) => {
+            if (e.target.closest("#pgn-play-btn")) {
+                toggleAutoplay();
+                return;
+            }
+            const ctrlBtn = e.target.closest(".pgn-ctrl-btn[data-action]");
+            if (ctrlBtn) {
+                stopAutoplay();
+                triggerLpvControl(ctrlBtn.getAttribute("data-action"));
+            }
+        });
+    }
+
+    const pgnViewerEl = get("pgnlive");
+    if (pgnViewerEl) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        pgnViewerEl.addEventListener("touchstart", (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+        pgnViewerEl.addEventListener("touchend", (e) => {
+            if (e.changedTouches.length !== 1) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+                stopAutoplay();
+                if (dx < 0) {
+                    triggerLpvControl("next");
+                } else {
+                    triggerLpvControl("prev");
+                }
+            }
+        }, { passive: true });
+    }
+
     document.addEventListener("keydown", (e) => {
         if (!backdrop || backdrop.classList.contains("hidden")) return;
         if (e.key === "Escape") {
             closePgnModal();
             return;
         }
-        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-            const controls = document.querySelectorAll("#pgnlive .lpv__controls button");
-            if (controls.length >= 4) {
-                const targetBtn = e.key === "ArrowLeft" ? controls[1] : controls[2];
-                if (targetBtn && !targetBtn.disabled) {
-                    e.preventDefault();
-                    targetBtn.click();
-                }
-            }
+        const inViewMode = pgnViewerEl && !pgnViewerEl.classList.contains("hidden");
+        if (!inViewMode) return;
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName || "")) return;
+
+        if (e.key === "ArrowLeft") {
+            stopAutoplay();
+            if (triggerLpvControl("prev")) e.preventDefault();
+        } else if (e.key === "ArrowRight") {
+            stopAutoplay();
+            if (triggerLpvControl("next")) e.preventDefault();
+        } else if (e.key === "Home") {
+            stopAutoplay();
+            if (triggerLpvControl("first")) e.preventDefault();
+        } else if (e.key === "End") {
+            stopAutoplay();
+            if (triggerLpvControl("last")) e.preventDefault();
+        } else if (e.key === " ") {
+            e.preventDefault();
+            toggleAutoplay();
+        } else if (e.key === "f" || e.key === "F") {
+            e.preventDefault();
+            triggerLpvControl("flip");
         }
     });
 

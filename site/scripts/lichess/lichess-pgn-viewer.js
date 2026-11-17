@@ -5801,6 +5801,7 @@ var LichessPgnViewer = (function () {
         function redraw() {
             vnode = patch(vnode, view(ctrl));
         }
+        return ctrl;
     }
 
     return start;
