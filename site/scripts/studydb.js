@@ -62,8 +62,28 @@ function request(uri, sendData) {
 }
 
 function patternMake() {
-    const el = get("piece_pattern");
-    return el ? el.value.trim() : "";
+    const inputs = document.querySelectorAll(".piece-count-input");
+    if (!inputs.length) return "";
+    let result = "";
+    inputs.forEach((input) => {
+        const piece = input.getAttribute("data-piece") || "";
+        const count = Math.max(0, Math.min(9, parseInt(input.value || "0", 10) || 0));
+        if (piece && count > 0) {
+            result += piece.repeat(count);
+        }
+    });
+    return result;
+}
+
+function applyPatternToInputs(pattern) {
+    const counts = {};
+    for (const ch of String(pattern || "")) {
+        counts[ch] = (counts[ch] || 0) + 1;
+    }
+    document.querySelectorAll(".piece-count-input").forEach((input) => {
+        const piece = input.getAttribute("data-piece") || "";
+        input.value = String(counts[piece] || 0);
+    });
 }
 
 function getSelectedCook() {
@@ -373,7 +393,7 @@ function restoreQueryFromUrl() {
     if (params.has("bmax") && get("bmax")) get("bmax").value = params.get("bmax");
     if (params.has("stipulation") && get("stipulation")) get("stipulation").value = params.get("stipulation");
     if (params.has("theme") && get("theme")) get("theme").value = params.get("theme");
-    if (params.has("piece_pattern") && get("piece_pattern")) get("piece_pattern").value = params.get("piece_pattern");
+    if (params.has("piece_pattern")) applyPatternToInputs(params.get("piece_pattern"));
     if (params.has("piece_mode") && get("piece_mode")) get("piece_mode").value = params.get("piece_mode");
     if (params.has("from_date") && get("from_date")) get("from_date").value = params.get("from_date");
     if (params.has("to_date") && get("to_date")) get("to_date").value = params.get("to_date");
@@ -458,7 +478,7 @@ function clearAll() {
     if (get("bmax")) get("bmax").value = "7";
     if (get("stipulation")) get("stipulation").value = "-";
     if (get("theme")) get("theme").value = "-";
-    if (get("piece_pattern")) get("piece_pattern").value = "";
+    applyPatternToInputs("");
     if (get("piece_mode")) get("piece_mode").value = "exact";
     setSelectedCook("all");
     if (get("from_date")) get("from_date").value = "1900";

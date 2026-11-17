@@ -55,15 +55,44 @@
                 </select>
             </div>
 
-            <div class="filter-group">
-                <label for="piece_pattern" class="filter-label">Piece pattern</label>
-                <div class="range-inputs">
-                    <input type="text" id="piece_pattern" class="u-full-width" placeholder="e.g. Rp, Qp, P" title="Material without kings: uppercase = White (QRBNP), lowercase = Black (qrbnp)" />
-                    <select id="piece_mode" aria-label="Piece pattern match mode">
-                        <option value="exact">Exact</option>
-                        <option value="contains">Includes</option>
+            <div class="filter-group filter-group-wide">
+                <div class="piece-matrix-header">
+                    <span class="filter-label">Pieces (material without kings)</span>
+                    <select id="piece_mode" class="piece-mode-select" aria-label="Piece pattern match mode">
+                        <option value="exact">Exact material</option>
+                        <option value="contains">Includes pieces</option>
                     </select>
                 </div>
+                <table class="piece-matrix" aria-label="Piece counts">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th title="Queen">&#9813; Q</th>
+                            <th title="Rook">&#9814; R</th>
+                            <th title="Bishop">&#9815; B</th>
+                            <th title="Knight">&#9816; N</th>
+                            <th title="Pawn">&#9817; P</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>White</th>
+                            <td><input type="number" class="piece-count-input" data-piece="Q" min="0" max="9" value="0" aria-label="White Queens" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="R" min="0" max="9" value="0" aria-label="White Rooks" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="B" min="0" max="9" value="0" aria-label="White Bishops" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="N" min="0" max="9" value="0" aria-label="White Knights" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="P" min="0" max="9" value="0" aria-label="White Pawns" /></td>
+                        </tr>
+                        <tr>
+                            <th>Black</th>
+                            <td><input type="number" class="piece-count-input" data-piece="q" min="0" max="9" value="0" aria-label="Black Queens" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="r" min="0" max="9" value="0" aria-label="Black Rooks" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="b" min="0" max="9" value="0" aria-label="Black Bishops" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="n" min="0" max="9" value="0" aria-label="Black Knights" /></td>
+                            <td><input type="number" class="piece-count-input" data-piece="p" min="0" max="9" value="0" aria-label="Black Pawns" /></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div class="filter-group">
