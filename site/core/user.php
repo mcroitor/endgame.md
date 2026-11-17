@@ -340,4 +340,95 @@ class user
         $userInfo["capabilities"] .= "</table>";
         return $template->fill($userInfo)->value();
     }
+
+    #[route("user/edit")]
+    public static function edit(array $params)
+    {
+        if (!user::has_role("admin")) {
+            header("location:" . config::www);
+            exit();
+        }
+        $userId = isset($params[0]) ? (int) $params[0] : 0;
+        if ($userId <= 0) {
+            return "Invalid user ID.";
+        }
+        $users = config::$db->select(\meta\user::__name__, ["id", "name", "login", "role_id"], ["id" => $userId]);
+        if (empty($users)) {
+            return "User not found.";
+        }
+        $target = $users[0];
+        $roles = config::$db->select(\meta\role::__name__, ["id", "name"]);
+
+        $loginEsc = htmlspecialchars((string) $target["login"], ENT_QUOTES, "UTF-8");
+        $nameEsc = htmlspecialchars((string) $target["name"], ENT_QUOTES, "UTF-8");
+        $roleOptions = "";
+        foreach ($roles as $r) {
+            $rId = (int) $r["id"];
+            $rName = htmlspecialchars((string) $r["name"], ENT_QUOTES, "UTF-8");
+            $selected = $rId === (int) $target["role_id"] ? " selected" : "";
+            $roleOptions .= "<option value='{$rId}'{$selected}>{$rName}</option>";
+        }
+
+        return <<<HTML
+<h2>Edit User: {$loginEsc}</h2>
+<form method="post" action="<!-- www -->/?q=user/update/{$userId}">
+    <!-- csrf-input -->
+    <div class="row">
+        <div class="six columns">
+            <label for="user-name">Display Name</label>
+            <input type="text" id="user-name" name="name" value="{$nameEsc}" class="u-full-width" required />
+        </div>
+        <div class="six columns">
+            <label for="user-role">Role</label>
+            <select id="user-role" name="role_id" class="u-full-width">
+                {$roleOptions}
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="six columns">
+            <label for="user-password">New Password (leave blank to keep current)</label>
+            <input type="password" id="user-password" name="new_password" class="u-full-width" autocomplete="new-password" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="twelve columns">
+            <input type="submit" value="Save" class="button-primary" />
+            <a href="<!-- www -->/?q=management/users" class="button">Cancel</a>
+        </div>
+    </div>
+</form>
+HTML;
+    }
+
+    #[route("user/update")]
+    public static function update(array $params)
+    {
+        self::require_csrf();
+        if (!user::has_role("admin")) {
+            header("location:" . config::www);
+            exit();
+        }
+        $userId = isset($params[0]) ? (int) $params[0] : 0;
+        $name = trim((string) (filter_input(INPUT_POST, "name") ?? ""));
+        $roleId = (int) (filter_input(INPUT_POST, "role_id", FILTER_VALIDATE_INT) ?? 0);
+        $newPassword = (string) (filter_input(INPUT_POST, "new_password") ?? "");
+
+        if ($userId <= 0 || $name === "" || $roleId <= 0) {
+            header("location:" . config::www . "/?q=management/users");
+            exit();
+        }
+
+        $updateData = [
+            \meta\user::NAME => $name,
+            \meta\user::ROLE_ID => $roleId,
+        ];
+        if ($newPassword !== "") {
+            $updateData[\meta\user::PASSWORD] = self::hash_password($newPassword);
+        }
+
+        config::$db->update(\meta\user::__name__, $updateData, ["id" => $userId]);
+        header("location:" . config::www . "/?q=management/users");
+        exit();
+    }
 }

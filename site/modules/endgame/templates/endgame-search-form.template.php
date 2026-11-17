@@ -56,6 +56,11 @@
             </div>
 
             <div class="filter-group">
+                <label for="piece_pattern" class="filter-label">Piece pattern</label>
+                <input type="text" id="piece_pattern" class="u-full-width" placeholder="e.g. Rp, Qp, P" title="Material without kings: uppercase = White (QRBNP), lowercase = Black (qrbnp)" />
+            </div>
+
+            <div class="filter-group">
                 <span class="filter-label">Year</span>
                 <div class="range-inputs">
                     <label for="from_date" class="range-sub">from</label>

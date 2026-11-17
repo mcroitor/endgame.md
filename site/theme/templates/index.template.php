@@ -25,7 +25,7 @@
                 <a href="<!-- www -->/" class="navbar-link" data-route="/">Search</a>
                 <a href="<!-- www -->/?q=about" class="navbar-link" data-route="about">About</a>
                 <a href="<!-- www -->/?q=links" class="navbar-link" data-route="links">Links</a>
-                <a href="/../builder/" class="navbar-link" data-route="builder">Position Builder (FEN)</a>
+                <a href="https://endgame.md/builder/" class="navbar-link" data-route="builder" target="_blank" rel="noopener">Position Builder (FEN)</a>
             </div>
             <div class="navbar-auth">
                 <!-- login-form -->
