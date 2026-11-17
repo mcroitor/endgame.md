@@ -62,8 +62,28 @@ function request(uri, sendData) {
 }
 
 function patternMake() {
-    const el = get("piece_pattern");
-    return el ? el.value.trim() : "";
+    const inputs = document.querySelectorAll(".piece-count-input");
+    if (!inputs.length) return "";
+    let result = "";
+    inputs.forEach((input) => {
+        const piece = input.getAttribute("data-piece") || "";
+        const count = Math.max(0, Math.min(9, parseInt(input.value || "0", 10) || 0));
+        if (piece && count > 0) {
+            result += piece.repeat(count);
+        }
+    });
+    return result;
+}
+
+function applyPatternToInputs(pattern) {
+    const counts = {};
+    for (const ch of String(pattern || "")) {
+        counts[ch] = (counts[ch] || 0) + 1;
+    }
+    document.querySelectorAll(".piece-count-input").forEach((input) => {
+        const piece = input.getAttribute("data-piece") || "";
+        input.value = String(counts[piece] || 0);
+    });
 }
 
 function getSelectedCook() {
@@ -336,7 +356,12 @@ function syncUrlWithQuery(sendData) {
     if (sendData.bmax !== "7") params.set("bmax", sendData.bmax);
     if (sendData.stipulation !== "-") params.set("stipulation", sendData.stipulation);
     if (sendData.theme !== "-") params.set("theme", sendData.theme);
-    if (sendData.piece_pattern) params.set("piece_pattern", sendData.piece_pattern);
+    if (sendData.piece_pattern) {
+        params.set("piece_pattern", sendData.piece_pattern);
+        if (sendData.piece_mode && sendData.piece_mode !== "exact") {
+            params.set("piece_mode", sendData.piece_mode);
+        }
+    }
     if (sendData.from_date !== "1900") params.set("from_date", sendData.from_date);
     if (sendData.to_date !== getDefaultToDate()) params.set("to_date", sendData.to_date);
     if (sendData.cook !== "all") params.set("cook", sendData.cook);
@@ -357,7 +382,7 @@ function restoreQueryFromUrl() {
     const params = new URLSearchParams(window.location.search);
     if (params.has("q")) return false;
 
-    const keys = ["author", "wmin", "wmax", "bmin", "bmax", "stipulation", "theme", "piece_pattern", "from_date", "to_date", "cook", "sort", "page"];
+    const keys = ["author", "wmin", "wmax", "bmin", "bmax", "stipulation", "theme", "piece_pattern", "piece_mode", "from_date", "to_date", "cook", "sort", "page"];
     const hasSearchParam = keys.some((k) => params.has(k));
     if (!hasSearchParam) return false;
 
@@ -368,7 +393,8 @@ function restoreQueryFromUrl() {
     if (params.has("bmax") && get("bmax")) get("bmax").value = params.get("bmax");
     if (params.has("stipulation") && get("stipulation")) get("stipulation").value = params.get("stipulation");
     if (params.has("theme") && get("theme")) get("theme").value = params.get("theme");
-    if (params.has("piece_pattern") && get("piece_pattern")) get("piece_pattern").value = params.get("piece_pattern");
+    if (params.has("piece_pattern")) applyPatternToInputs(params.get("piece_pattern"));
+    if (params.has("piece_mode") && get("piece_mode")) get("piece_mode").value = params.get("piece_mode");
     if (params.has("from_date") && get("from_date")) get("from_date").value = params.get("from_date");
     if (params.has("to_date") && get("to_date")) get("to_date").value = params.get("to_date");
     if (params.has("cook")) setSelectedCook(params.get("cook"));
@@ -400,8 +426,9 @@ async function getPosition(page, pushUrl = true) {
         bmin: get("bmin").value,
         bmax: get("bmax").value,
         piece_pattern: patternMake(),
+        piece_mode: get("piece_mode") ? get("piece_mode").value : "exact",
         stipulation: get("stipulation").value,
-        theme: get("theme").value,
+        theme: get("theme") ? get("theme").value : "-",
         from_date: get("from_date").value,
         to_date: get("to_date").value,
         cook: getSelectedCook(),
@@ -451,7 +478,8 @@ function clearAll() {
     if (get("bmax")) get("bmax").value = "7";
     if (get("stipulation")) get("stipulation").value = "-";
     if (get("theme")) get("theme").value = "-";
-    if (get("piece_pattern")) get("piece_pattern").value = "";
+    applyPatternToInputs("");
+    if (get("piece_mode")) get("piece_mode").value = "exact";
     setSelectedCook("all");
     if (get("from_date")) get("from_date").value = "1900";
     if (get("to_date")) get("to_date").value = getDefaultToDate();
@@ -673,8 +701,9 @@ function getPdf() {
         bmin: get("bmin").value,
         bmax: get("bmax").value,
         piece_pattern: patternMake(),
+        piece_mode: get("piece_mode") ? get("piece_mode").value : "exact",
         stipulation: get("stipulation").value,
-        theme: get("theme").value,
+        theme: get("theme") ? get("theme").value : "-",
         from_date: get("from_date").value,
         to_date: get("to_date").value,
         cook: getSelectedCook()
