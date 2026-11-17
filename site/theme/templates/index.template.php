@@ -7,6 +7,7 @@
     <meta name="app-base" content="<!-- www -->">
     <meta name="keywords" content="chess endgame study database, chess, база шахматных этюдов, шахматы" />
     <script type="text/javascript" src="<!-- www -->/scripts/studydb.js" defer></script>
+    <script type="text/javascript" src="<!-- www -->/scripts/solve-mode.js" defer></script>
     <script type="text/javascript" src="<!-- www -->/scripts/lichess/lichess-pgn-viewer.js" defer></script>
     <link rel="stylesheet" href="<!-- www -->/theme/css/normalize.css" />
     <link rel="stylesheet" href="<!-- www -->/theme/css/skeleton.css" />
@@ -39,10 +40,15 @@
         <div id="pgnlive-wrapper">
             <div class="titlebar">
                 <span class="titlebar-label" id="pgnlive-title">Solution</span>
+                <div id="modal-mode-switch" class="modal-mode-switch hidden" role="group" aria-label="Viewer mode">
+                    <button type="button" id="mode-view" class="mode-btn active">View solution</button>
+                    <button type="button" id="mode-solve" class="mode-btn">Solve yourself</button>
+                </div>
                 <button type="button" id="pgnlive-close" class="close-icon" aria-label="Close solution">&times;</button>
             </div>
             <div id="pgnlive-meta" class="pgnlive-meta hidden"></div>
             <div id="pgnlive"></div>
+            <div id="solve-workspace" class="solve-workspace hidden"></div>
             <div id="pgnlive-actions" class="pgnlive-actions hidden"></div>
             <div id="pgnlive-syzygy" class="pgnlive-syzygy hidden"></div>
         </div>
