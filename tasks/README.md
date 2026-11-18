@@ -42,3 +42,5 @@ See `tasks/ui/recommendations.md` and `tasks/ui/ui_ex.png` for details.
 | [TASK-024](TASK-024-ui-favorites-history-and-dark-mode.md) | Favorites, Viewing History, Dark Mode, and Moderator Cook Toggle | Low | `ui/recommendations.md` §6 |
 | [TASK-025](TASK-025-analytics-access-and-permissions.md) | Enable Admin Access and Enforce Permissions for `analytics` Module | High | Module Access & Auth |
 | [TASK-026](TASK-026-analytics-extensions.md) | Extend `analytics` Module with Data Integrity, Duplicate Detection, Author Merging, and Search Insights | Medium | Analytics Expansion |
+| [TASK-027](TASK-027-theme-reindexing-and-search.md) | Theme Re-Indexing, Manual/Automatic Tagging, and Theme Search | Medium | `analytics`, `api`, Search UI |
+| [TASK-028](TASK-028-study-rating-system.md) | Study Star Rating System (1–5 Stars) | Medium | `api`, Study Cards & Modal |

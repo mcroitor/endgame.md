@@ -277,6 +277,13 @@ function buildBadgesHtml(desc) {
             `<span class="study-badge study-badge-side" title="${escapeHtml(pieces.title)}">${escapeHtml(pieces.label)}</span>`
         );
     }
+    const ratingCount = parseInt(desc["#rating_count#"] || 0, 10);
+    const ratingAvg = parseFloat(desc["#rating_avg#"] || 0);
+    if (ratingCount > 0) {
+        badges.push(
+            `<span class="study-badge study-badge-rating" title="Average rating ${ratingAvg.toFixed(1)} from ${ratingCount} vote(s)">&#9733; ${ratingAvg.toFixed(1)} (${ratingCount})</span>`
+        );
+    }
     return badges.join("");
 }
 
@@ -304,7 +311,7 @@ function renderCard(desc) {
         <div class="study-board js-open-solution" data-pid="${pidEsc}" role="button" tabindex="0" title="Open solution" aria-label="Open solution for study ${pidEsc}">
             <img src="${APP_BASE}/modules/diagram/?fen=${fenUrl}&size=32" alt="Chess position FEN: ${fenEscaped}" loading="lazy" />
         </div>
-        <div class="study-badges">${buildBadgesHtml(desc)}</div>
+        <div class="study-badges" data-badges-pid="${pidEsc}">${buildBadgesHtml(desc)}</div>
         <div class="study-card-footer">
             <div class="study-actions">
                 <button type="button" class="button js-pgnlive" data-pid="${pidEsc}">Solution</button>
@@ -645,6 +652,81 @@ function setModalMode(mode) {
     }
 }
 
+function buildRatingWidgetHtml(pid, avg, count, userRating) {
+    const pidEsc = escapeHtml(String(pid));
+    const avgNum = parseFloat(avg || 0);
+    const countNum = parseInt(count || 0, 10);
+    const userNum = parseInt(userRating || 0, 10);
+    const activeStars = userNum > 0 ? userNum : Math.round(avgNum);
+
+    let starsHtml = "";
+    for (let s = 1; s <= 5; s++) {
+        const isFilled = s <= activeStars;
+        const isUser = userNum > 0 && s <= userNum;
+        starsHtml += `<button type="button" class="rating-star ${isFilled ? "is-filled" : ""} ${isUser ? "is-user" : ""}" data-star="${s}" aria-label="Rate ${s} out of 5 stars" title="Rate ${s}/5">&#9733;</button>`;
+    }
+
+    const summaryText = countNum > 0
+        ? `${avgNum.toFixed(1)} (${countNum} ${countNum === 1 ? "vote" : "votes"})${userNum > 0 ? ` · Yours: ${userNum}/5` : ""}`
+        : "No ratings yet";
+
+    return `<div class="study-rating-widget" data-pid="${pidEsc}">
+        <span class="rating-stars" role="group" aria-label="Rate this study">${starsHtml}</span>
+        <span class="rating-summary">${escapeHtml(summaryText)}</span>
+    </div>`;
+}
+
+function bindRatingWidget(container, pid) {
+    const widget = container ? container.querySelector(".study-rating-widget") : null;
+    if (!widget) return;
+
+    const stars = Array.from(widget.querySelectorAll(".rating-star"));
+    const summaryEl = widget.querySelector(".rating-summary");
+
+    const paintHover = (hoverVal) => {
+        stars.forEach((btn) => {
+            const val = parseInt(btn.getAttribute("data-star"), 10);
+            btn.classList.toggle("is-hover", hoverVal > 0 && val <= hoverVal);
+        });
+    };
+
+    stars.forEach((btn) => {
+        const starVal = parseInt(btn.getAttribute("data-star"), 10);
+        btn.addEventListener("mouseenter", () => paintHover(starVal));
+        btn.addEventListener("mouseleave", () => paintHover(0));
+        btn.addEventListener("click", async () => {
+            stars.forEach((b) => { b.disabled = true; });
+            try {
+                const res = await request(`${APP_BASE}/api/?q=rate`, { pid: parseInt(pid, 10), rating: starVal });
+                if (res && !res.error) {
+                    const study = currentStudiesMap.get(String(pid));
+                    if (study) {
+                        study["#rating_avg#"] = res.rating_avg;
+                        study["#rating_count#"] = res.rating_count;
+                        study["#user_rating#"] = res.user_rating;
+                        const cardBadges = document.querySelector(`.study-badges[data-badges-pid="${CSS.escape(String(pid))}"]`);
+                        if (cardBadges) {
+                            cardBadges.innerHTML = buildBadgesHtml(study);
+                        }
+                        const modalBadges = container.querySelector(".study-badges");
+                        if (modalBadges) {
+                            modalBadges.innerHTML = buildBadgesHtml(study);
+                        }
+                    }
+                    widget.outerHTML = buildRatingWidgetHtml(pid, res.rating_avg, res.rating_count, res.user_rating);
+                    bindRatingWidget(container, pid);
+                    return;
+                }
+            } catch (e) {
+                if (summaryEl) {
+                    summaryEl.textContent = "Could not save rating.";
+                }
+            }
+            stars.forEach((b) => { b.disabled = false; });
+        });
+    });
+}
+
 async function pgnLive(pid, triggerEl = null) {
     const backdrop = get("pgnlive-backdrop");
     const viewer = get("pgnlive");
@@ -678,11 +760,15 @@ async function pgnLive(pid, triggerEl = null) {
                 ${sourceLine ? `<span class="pgnlive-meta-source">${sourceLine}</span>` : ""}
                 <span class="study-pid">PID ${escapeHtml(pid)}</span>
             </div>
-            <div class="study-badges" style="margin:0;">${buildBadgesHtml(study)}</div>`;
+            <div class="study-badges" style="margin:0;">${buildBadgesHtml(study)}</div>
+            ${buildRatingWidgetHtml(pid, study["#rating_avg#"], study["#rating_count#"], study["#user_rating#"])}`;
             metaBox.classList.remove("hidden");
+            bindRatingWidget(metaBox, pid);
         } else {
-            metaBox.innerHTML = `<div class="pgnlive-meta-main"><span class="study-pid">PID ${escapeHtml(pid)}</span></div>`;
+            metaBox.innerHTML = `<div class="pgnlive-meta-main"><span class="study-pid">PID ${escapeHtml(pid)}</span></div>
+            ${buildRatingWidgetHtml(pid, 0, 0, 0)}`;
             metaBox.classList.remove("hidden");
+            bindRatingWidget(metaBox, pid);
         }
     }
 
