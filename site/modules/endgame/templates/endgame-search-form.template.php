@@ -129,6 +129,8 @@
             <option value="date_desc">Year (newest first)</option>
             <option value="author_asc">Author (A–Z)</option>
             <option value="pieces_asc">Pieces (fewest first)</option>
+            <option value="rating_desc">Rating (highest first)</option>
+            <option value="rating_asc">Rating (lowest first)</option>
         </select>
         <button type="button" id="pdf-btn" class="button-primary pdf-btn">Download PDF</button>
     </div>

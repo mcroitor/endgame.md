@@ -78,3 +78,14 @@ CREATE TABLE IF NOT EXISTS composer(
   death TEXT,
   id_own_alphabet TEXT
 );
+-- study ratings table
+CREATE TABLE IF NOT EXISTS endgame_ratings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pid INTEGER NOT NULL,
+  voter_hash TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE (pid, voter_hash)
+);
+CREATE INDEX IF NOT EXISTS idx_endgame_ratings_pid ON endgame_ratings(pid);

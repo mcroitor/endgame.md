@@ -794,10 +794,10 @@ input[type="button"].button-primary:focus {
     background-color: #ffffff;
     background-image:
         conic-gradient(
-            #ffffff 0deg 90deg,
-            transparent 90deg 180deg,
-            #ffffff 180deg 270deg,
-            transparent 270deg 360deg
+            transparent 0deg 90deg,
+            #ffffff 90deg 180deg,
+            transparent 180deg 270deg,
+            #ffffff 270deg 360deg
         ),
         repeating-linear-gradient(
             -45deg,
@@ -1359,4 +1359,57 @@ input[type="button"].button-primary:focus {
     padding: 0.3rem 0.4rem;
     height: 3.4rem;
     text-align: center;
+}
+
+/* Study Star Rating */
+.study-badge-rating {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.study-rating-widget {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.rating-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.rating-star {
+    background: none;
+    border: none;
+    padding: 0 0.15rem;
+    margin: 0;
+    height: auto;
+    line-height: 1;
+    font-size: 1.9rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.rating-star.is-filled,
+.rating-star.is-user {
+    color: #f59e0b;
+}
+
+.rating-star.is-hover {
+    color: #d97706;
+    transform: scale(1.12);
+}
+
+.rating-star:focus-visible {
+    outline: 2px solid #2563eb;
+    border-radius: 3px;
+}
+
+.rating-summary {
+    font-size: 1.25rem;
+    color: #475569;
 }

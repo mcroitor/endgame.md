@@ -202,4 +202,96 @@ final class ApiSmokeTest extends TestCase
         $this->assertNotFalse($body);
         $this->assertStringStartsWith("\x89PNG\r\n\x1a\n", $body);
     }
+
+    public function testStudyRatingAndSorting(): void
+    {
+        $rate = function (array $payload, string $cookie = ''): array {
+            $headers = "Content-Type: application/json\r\n";
+            if ($cookie !== '') {
+                $headers .= "Cookie: endgame_voter={$cookie}\r\n";
+            }
+            $ctx = stream_context_create([
+                'http' => [
+                    'method' => 'POST',
+                    'header' => $headers,
+                    'content' => json_encode($payload),
+                    'ignore_errors' => true,
+                ],
+            ]);
+            $body = file_get_contents(self::$baseUrl . '/api/?q=rate', false, $ctx);
+            return json_decode($body, true);
+        };
+
+        $voterA = str_repeat('a', 32);
+        $voterB = str_repeat('b', 32);
+
+        // Voter A rates study 1 with 5 stars
+        $r1 = $rate(['pid' => 1, 'rating' => 5], $voterA);
+        $this->assertSame(1, $r1['pid']);
+        $this->assertEquals(5.0, $r1['rating_avg']);
+        $this->assertSame(1, $r1['rating_count']);
+        $this->assertSame(5, $r1['user_rating']);
+
+        // Voter A updates vote on study 1 to 3 stars (count must stay 1)
+        $r1Update = $rate(['pid' => 1, 'rating' => 3], $voterA);
+        $this->assertEquals(3.0, $r1Update['rating_avg']);
+        $this->assertSame(1, $r1Update['rating_count']);
+        $this->assertSame(3, $r1Update['user_rating']);
+
+        // Voter B rates study 1 with 5 stars -> avg (3+5)/2 = 4.0, count 2
+        $r1B = $rate(['pid' => 1, 'rating' => 5], $voterB);
+        $this->assertEquals(4.0, $r1B['rating_avg']);
+        $this->assertSame(2, $r1B['rating_count']);
+
+        // Voter A rates study 2 with 5 stars -> avg 5.0, count 1
+        $r2 = $rate(['pid' => 2, 'rating' => 5], $voterA);
+        $this->assertEquals(5.0, $r2['rating_avg']);
+
+        // Invalid rating rejected
+        $bad = $rate(['pid' => 1, 'rating' => 6], $voterA);
+        $this->assertArrayHasKey('error', $bad);
+
+        // Sort by rating_desc: study 2 (5.0) should come before study 1 (4.0)
+        $ctx = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\nCookie: endgame_voter={$voterA}\r\n",
+                'content' => json_encode([
+                    'cook' => 'all',
+                    'sort' => 'rating_desc',
+                    'wmin' => 1,
+                    'wmax' => 7,
+                    'bmin' => 1,
+                    'bmax' => 7,
+                ]),
+            ],
+        ]);
+        $data = json_decode(file_get_contents(self::$baseUrl . '/api/?q=data', false, $ctx), true);
+        $this->assertSame(2, $data['stat']);
+        $this->assertSame(2, (int) $data['html'][0]['#pid#']);
+        $this->assertEquals(5.0, $data['html'][0]['#rating_avg#']);
+        $this->assertSame(5, $data['html'][0]['#user_rating#']);
+        $this->assertSame(1, (int) $data['html'][1]['#pid#']);
+        $this->assertEquals(4.0, $data['html'][1]['#rating_avg#']);
+        $this->assertSame(3, $data['html'][1]['#user_rating#']);
+
+        // Sort by rating_asc: study 1 (4.0) should come before study 2 (5.0)
+        $ctxAsc = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\n",
+                'content' => json_encode([
+                    'cook' => 'all',
+                    'sort' => 'rating_asc',
+                    'wmin' => 1,
+                    'wmax' => 7,
+                    'bmin' => 1,
+                    'bmax' => 7,
+                ]),
+            ],
+        ]);
+        $dataAsc = json_decode(file_get_contents(self::$baseUrl . '/api/?q=data', false, $ctxAsc), true);
+        $this->assertSame(1, (int) $dataAsc['html'][0]['#pid#']);
+        $this->assertSame(2, (int) $dataAsc['html'][1]['#pid#']);
+    }
 }
