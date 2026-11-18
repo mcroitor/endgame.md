@@ -281,10 +281,21 @@
 
             this.initialState = timeline.initialState;
             this.steps = timeline.steps;
+            this.startStepIndex = (this.initialState.turn === "b" && this.steps.length > 0) ? 1 : 0;
+            this.replyTimer = null;
+            this.wrongTimer = null;
             this.reset();
         }
 
         reset() {
+            if (this.replyTimer) {
+                clearTimeout(this.replyTimer);
+                this.replyTimer = null;
+            }
+            if (this.wrongTimer) {
+                clearTimeout(this.wrongTimer);
+                this.wrongTimer = null;
+            }
             this.stepIndex = 0;
             this.state = {
                 board: cloneBoard(this.initialState.board),
@@ -296,10 +307,48 @@
             this.lastMove = null;
             this.wrongSquare = null;
             this.pendingPromo = null;
+
+            if (this.steps.length === 0) {
+                this.busy = false;
+                this.statusText = "No playable moves found in PGN.";
+                this.statusKind = "info";
+                this.render();
+                return;
+            }
+
+            if (this.initialState.turn === "b") {
+                this.busy = true;
+                this.statusText = "Black to move \u2014 opponent playing first move\u2026";
+                this.statusKind = "info";
+                this.render();
+
+                this.replyTimer = setTimeout(() => {
+                    this.replyTimer = null;
+                    const opening = this.steps[0];
+                    if (opening) {
+                        this.state = {
+                            board: cloneBoard(opening.nextState.board),
+                            turn: opening.nextState.turn,
+                            ep: opening.nextState.ep
+                        };
+                        this.lastMove = { from: opening.from, to: opening.to };
+                        this.stepIndex = 1;
+                    }
+                    this.busy = false;
+                    if (this.stepIndex >= this.steps.length) {
+                        this.statusText = "Solved! Main line completed.";
+                        this.statusKind = "success";
+                    } else {
+                        this.statusText = "White to move \u2014 find the best line.";
+                        this.statusKind = "info";
+                    }
+                    this.render();
+                }, 350);
+                return;
+            }
+
             this.busy = false;
-            this.statusText = this.steps.length === 0
-                ? "No playable moves found in PGN."
-                : (this.state.turn === "w" ? "White to move — find the winning line." : "Black to move — find the best line.");
+            this.statusText = "White to move \u2014 find the winning line.";
             this.statusKind = "info";
             this.render();
         }
@@ -382,7 +431,8 @@
                 this.busy = true;
                 this.render();
 
-                setTimeout(() => {
+                this.replyTimer = setTimeout(() => {
+                    this.replyTimer = null;
                     const reply = this.steps[this.stepIndex];
                     if (reply) {
                         this.state = {
@@ -409,7 +459,11 @@
                 this.statusText = "Incorrect, try again.";
                 this.statusKind = "error";
                 this.render();
-                setTimeout(() => {
+                if (this.wrongTimer) {
+                    clearTimeout(this.wrongTimer);
+                }
+                this.wrongTimer = setTimeout(() => {
+                    this.wrongTimer = null;
                     this.wrongSquare = null;
                     this.render();
                 }, 650);
@@ -431,8 +485,18 @@
                 return '<span class="solve-empty-moves">Moves you find will appear here.</span>';
             }
             const items = [];
+            const startsWithBlack = this.initialState.turn === "b";
             for (let i = 0; i < this.stepIndex; i++) {
-                const prefix = i % 2 === 0 ? `${Math.floor(i / 2) + 1}. ` : "";
+                let prefix = "";
+                if (startsWithBlack) {
+                    if (i === 0) {
+                        prefix = "1... ";
+                    } else if (i % 2 === 1) {
+                        prefix = `${Math.floor((i + 1) / 2) + 1}. `;
+                    }
+                } else if (i % 2 === 0) {
+                    prefix = `${Math.floor(i / 2) + 1}. `;
+                }
                 items.push(`<span class="solve-move-chip">${prefix}${this.escape(this.steps[i].san)}</span>`);
             }
             return items.join(" ");
@@ -509,7 +573,7 @@
                     <div class="solve-progress">${this.buildPlayedMovesHtml()}</div>
                     <div class="solve-controls">
                         <button type="button" class="button js-solve-hint" ${solved || this.steps.length === 0 ? "disabled" : ""}>Hint</button>
-                        <button type="button" class="button js-solve-reset" ${this.stepIndex === 0 ? "disabled" : ""}>Reset</button>
+                        <button type="button" class="button js-solve-reset" ${this.stepIndex <= this.startStepIndex ? "disabled" : ""}>Reset</button>
                         <button type="button" class="button button-primary js-solve-reveal">Show solution</button>
                     </div>
                 </div>

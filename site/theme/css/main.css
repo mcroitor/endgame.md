@@ -794,10 +794,10 @@ input[type="button"].button-primary:focus {
     background-color: #ffffff;
     background-image:
         conic-gradient(
-            #ffffff 0deg 90deg,
-            transparent 90deg 180deg,
-            #ffffff 180deg 270deg,
-            transparent 270deg 360deg
+            transparent 0deg 90deg,
+            #ffffff 90deg 180deg,
+            transparent 180deg 270deg,
+            #ffffff 270deg 360deg
         ),
         repeating-linear-gradient(
             -45deg,
