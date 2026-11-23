@@ -27,6 +27,6 @@ Fix mobile viewport scaling, modernize the top navigation bar with Flexbox and a
    - Remove the duplicate `id="login-form"` from the `Log Out` link in `usermenu.template.php`.
 
 ## Acceptance Criteria
-- [ ] Site renders at native 1:1 scale on mobile viewports without horizontal overflow.
-- [ ] Navbar links do not wrap awkwardly or collide (`Position Builder (FEN)` fits cleanly), and the active page link is highlighted.
-- [ ] Login / User menu opens on click/tap, does not shift page layout, and closes on outside click or `Escape`.
+- [x] Site renders at native 1:1 scale on mobile viewports without horizontal overflow.
+- [x] Navbar links do not wrap awkwardly or collide (`Position Builder (FEN)` fits cleanly), and the active page link is highlighted.
+- [x] Login / User menu opens on click/tap, does not shift page layout, and closes on outside click or `Escape`.

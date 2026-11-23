@@ -1,5 +1,6 @@
 const PAGE_SIZE = 12;
 const APP_BASE = (document.querySelector('meta[name="app-base"]')?.getAttribute("content") || "").replace(/\/+$/, "");
+const CAN_EDIT_STUDY = document.querySelector('meta[name="can-edit-study"]')?.getAttribute("content") === "1";
 const currentStudiesMap = new Map();
 let lastFocusedElement = null;
 let currentModalPgn = "";
@@ -783,6 +784,7 @@ async function pgnLive(pid, triggerEl = null) {
             ${lichessUrl ? `<a href="${escapeHtml(lichessUrl)}" class="button" target="_blank" rel="noopener">Open in Lichess</a>` : ""}
             ${fen && pieceCount > 0 && pieceCount <= 7 ? `<button type="button" class="button js-check-syzygy" data-fen="${escapeHtml(fen)}">Check Syzygy</button>` : ""}
             <button type="button" class="button js-modal-copy-link" data-url="${escapeHtml(studyUrl)}">Copy link</button>
+            ${CAN_EDIT_STUDY ? `<a href="${APP_BASE}/?q=endgame/edit/${escapeHtml(pid)}" class="button">Edit study</a>` : ""}
         `;
         actionsBox.classList.remove("hidden");
     }
@@ -938,7 +940,7 @@ function initAuthDropdown() {
 }
 
 function initFenCreatePreview() {
-    const fenInput = document.querySelector('.endgame-create-form input[name="fen"]');
+    const fenInput = document.querySelector('.endgame-create-form input[name="fen"], .endgame-edit-form input[name="fen"]');
     const wrap = get("fen-preview-wrap");
     const img = get("fen-preview-img");
     if (!fenInput || !wrap || !img) return;

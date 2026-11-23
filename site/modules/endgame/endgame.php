@@ -71,6 +71,249 @@ class endgame
         ];
     }
 
+    private static function canEdit(): bool
+    {
+        return user::has_capability(ENDGAME_CAPABILITIY::UPDATE) || user::has_role("admin");
+    }
+
+    private static function canDelete(): bool
+    {
+        return user::has_capability(ENDGAME_CAPABILITIY::DELETE) || user::has_role("admin");
+    }
+
+    private static function buildRawPgn(
+        string $source,
+        string $date,
+        string $author,
+        string $stipulation,
+        string $fen,
+        string $moves = ""
+    ): string {
+        $resultTag = $stipulation === "White wins"
+            ? "1-0"
+            : ($stipulation === "Black wins" ? "0-1" : ($stipulation === "Draw" ? "1/2-1/2" : "*"));
+        return sprintf(
+            "[Event \"%s\"]\n[Site \"?\"]\n[Date \"%s\"]\n[Round \"-\"]\n[White \"%s\"]\n[Black \"?\"]\n[Result \"%s\"]\n[FEN \"%s\"]\n\n%s",
+            str_replace('"', "'", $source !== "" ? $source : "endgame.md"),
+            str_replace('"', "'", $date !== "" ? $date : date("Y")),
+            str_replace('"', "'", $author),
+            $resultTag,
+            str_replace('"', "'", $fen),
+            $moves !== "" ? $moves : $resultTag
+        );
+    }
+
+    private static function esc(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES, "UTF-8");
+    }
+
+    #[\mc\route('endgame/edit')]
+    public static function editForm(array $params)
+    {
+        if (!self::canEdit()) {
+            header("location:" . \config::www);
+            exit();
+        }
+        $pid = isset($params[0]) ? (int) $params[0] : 0;
+        if ($pid <= 0) {
+            return '<div class="status-message status-error">Invalid study PID.</div>';
+        }
+
+        $db = \config::$db;
+        $rows = $db->exec_prepared("SELECT * FROM endgame WHERE pid = ?", [$pid]);
+        if (empty($rows)) {
+            return '<div class="status-message status-error">Study not found.</div>';
+        }
+        $study = $rows[0];
+
+        $rawRows = $db->exec_prepared("SELECT data FROM raw WHERE id = ?", [$pid]);
+        $rawPgn = (string) ($rawRows[0]["data"] ?? "");
+        if ($rawPgn === "") {
+            $rawPgn = self::buildRawPgn(
+                (string) ($study[\meta\endgame::SOURCE] ?? ""),
+                (string) ($study[\meta\endgame::DATE] ?? ""),
+                (string) ($study[\meta\endgame::AUTHOR] ?? ""),
+                (string) ($study[\meta\endgame::STIPULATION] ?? "*"),
+                (string) ($study[\meta\endgame::FEN] ?? "")
+            );
+        }
+
+        $currentStip = (string) ($study[\meta\endgame::STIPULATION] ?? "*");
+        $stipOptionsMap = [
+            "White wins" => "White wins",
+            "Draw" => "Draw",
+            "Black wins" => "Black wins",
+            "*" => "Not specified",
+        ];
+        if (!isset($stipOptionsMap[$currentStip]) && $currentStip !== "") {
+            $stipOptionsMap[$currentStip] = $currentStip;
+        }
+        $stipOptionsHtml = "";
+        foreach ($stipOptionsMap as $val => $label) {
+            $selected = $val === $currentStip ? " selected" : "";
+            $stipOptionsHtml .= '<option value="' . self::esc($val) . '"' . $selected . '>' . self::esc($label) . '</option>';
+        }
+
+        $errorCode = (string) ($_GET["error"] ?? "");
+        $errorBanner = "";
+        if ($errorCode === "missing_required") {
+            $errorBanner = '<div class="status-message status-error">FEN and Author are required fields.</div>';
+        }
+
+        $deleteSection = "";
+        if (self::canDelete()) {
+            $deleteSection = '<hr />'
+                . '<form method="post" action="<!-- www -->/?q=endgame/delete/' . $pid . '" '
+                . 'onsubmit="return confirm(\'Delete study PID ' . $pid . '? This action cannot be undone.\');">'
+                . '<!-- csrf-input -->'
+                . '<button type="submit" class="button" style="color:#991b1b;border-color:#fca5a5;">Delete study</button>'
+                . '</form>';
+        }
+
+        $template = \facade::template("endgame-edit-form.template.php", self::TEMPLATES_DIR);
+        return $template->fill([
+            "pid" => (string) $pid,
+            "error-banner" => $errorBanner,
+            "fen" => self::esc((string) ($study[\meta\endgame::FEN] ?? "")),
+            "fen-encoded" => urlencode((string) ($study[\meta\endgame::FEN] ?? "")),
+            "author" => self::esc((string) ($study[\meta\endgame::AUTHOR] ?? "")),
+            "date" => self::esc((string) ($study[\meta\endgame::DATE] ?? "")),
+            "source" => self::esc((string) ($study[\meta\endgame::SOURCE] ?? "")),
+            "award" => self::esc((string) ($study[\meta\endgame::AWARD] ?? "")),
+            "stipulation-options" => $stipOptionsHtml,
+            "theme" => self::esc((string) ($study[\meta\endgame::THEME] ?? "")),
+            "cook-checked" => ((int) ($study[\meta\endgame::COOK] ?? 0)) === 1 ? "checked" : "",
+            "commentary" => self::esc((string) ($study[\meta\endgame::COMMENTARY] ?? "")),
+            "raw-pgn" => self::esc($rawPgn),
+            "delete-section" => $deleteSection,
+        ])->value();
+    }
+
+    #[\mc\route('endgame/update')]
+    public static function update(array $params)
+    {
+        if (($_SERVER["REQUEST_METHOD"] ?? "GET") !== "POST") {
+            http_response_code(405);
+            return "Method Not Allowed";
+        }
+        user::require_csrf();
+        if (!self::canEdit()) {
+            header("location:" . \config::www);
+            exit();
+        }
+
+        $pid = isset($params[0]) ? (int) $params[0] : 0;
+        if ($pid <= 0) {
+            header("location:" . \config::www);
+            exit();
+        }
+
+        $db = \config::$db;
+        $existing = $db->exec_prepared("SELECT * FROM endgame WHERE pid = ?", [$pid]);
+        if (empty($existing)) {
+            header("location:" . \config::www);
+            exit();
+        }
+        $oldStudy = $existing[0];
+
+        $fen = trim((string) ($_POST["fen"] ?? ""));
+        $author = trim((string) ($_POST["author"] ?? ""));
+        $date = trim((string) ($_POST["date"] ?? ""));
+        $source = trim((string) ($_POST["source"] ?? ""));
+        $award = trim((string) ($_POST["award"] ?? ""));
+        $stipulation = trim((string) ($_POST["stipulation"] ?? "*"));
+        $theme = trim((string) ($_POST["theme"] ?? ""));
+        $commentary = trim((string) ($_POST["commentary"] ?? ""));
+        $cook = (isset($_POST["cook"]) && (string) $_POST["cook"] === "1") ? 1 : 0;
+        $rawPgn = trim((string) ($_POST["raw_pgn"] ?? ""));
+
+        $baseUrl = rtrim(\config::www, "/");
+        if ($fen === "" || $author === "") {
+            header("location:" . $baseUrl . "/?q=endgame/edit/" . $pid . "&error=missing_required");
+            exit();
+        }
+
+        $fenMeta = self::analyzeFen($fen);
+        $finalDate = $date !== "" ? $date : (string) ($oldStudy[\meta\endgame::DATE] ?? date("Y"));
+        $finalStip = $stipulation !== "" ? $stipulation : "*";
+        $finalTheme = $theme !== "" ? $theme : "unknown";
+
+        $db->exec_prepared(
+            "UPDATE endgame SET fen = ?, author = ?, date = ?, source = ?, award = ?, stipulation = ?, theme = ?, commentary = ?, cook = ?, whitep = ?, blackp = ?, piece_pattern = ? WHERE pid = ?",
+            [
+                $fen,
+                $author,
+                $finalDate,
+                $source,
+                $award,
+                $finalStip,
+                $finalTheme,
+                $commentary,
+                $cook,
+                $fenMeta["whitep"],
+                $fenMeta["blackp"],
+                $fenMeta["piece_pattern"],
+                $pid,
+            ],
+            false
+        );
+
+        if ($rawPgn === "") {
+            $rawPgn = self::buildRawPgn($source, $finalDate, $author, $finalStip, $fen);
+        } else {
+            $oldFen = (string) ($oldStudy[\meta\endgame::FEN] ?? "");
+            if ($oldFen !== "" && $fen !== $oldFen) {
+                $escapedNewFen = str_replace('"', "'", $fen);
+                $rawPgn = preg_replace_callback(
+                    '/\[FEN\s+"([^"]*)"\]/i',
+                    static fn(array $m) => $m[1] === $oldFen ? '[FEN "' . $escapedNewFen . '"]' : $m[0],
+                    $rawPgn
+                );
+            }
+        }
+
+        $rawExists = $db->exec_prepared("SELECT id FROM raw WHERE id = ?", [$pid]);
+        if (empty($rawExists)) {
+            $db->exec_prepared("INSERT INTO raw (id, data) VALUES (?, ?)", [$pid, $rawPgn], false);
+        } else {
+            $db->exec_prepared("UPDATE raw SET data = ? WHERE id = ?", [$rawPgn, $pid], false);
+        }
+
+        header("location:" . $baseUrl . "/?pid=" . urlencode((string) $pid));
+        exit();
+    }
+
+    #[\mc\route('endgame/delete')]
+    public static function delete(array $params)
+    {
+        if (($_SERVER["REQUEST_METHOD"] ?? "GET") !== "POST") {
+            http_response_code(405);
+            return "Method Not Allowed";
+        }
+        user::require_csrf();
+        if (!self::canDelete()) {
+            header("location:" . \config::www);
+            exit();
+        }
+
+        $pid = isset($params[0]) ? (int) $params[0] : 0;
+        if ($pid > 0) {
+            $db = \config::$db;
+            $db->exec_prepared("DELETE FROM endgame WHERE pid = ?", [$pid], false);
+            $db->exec_prepared("DELETE FROM raw WHERE id = ?", [$pid], false);
+            $hasRatings = $db->exec_prepared(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='endgame_ratings'"
+            );
+            if (!empty($hasRatings)) {
+                $db->exec_prepared("DELETE FROM endgame_ratings WHERE pid = ?", [$pid], false);
+            }
+        }
+
+        header("location:" . \config::www);
+        exit();
+    }
+
     #[\mc\route('endgame/create')]
     public static function create(array $params)
     {

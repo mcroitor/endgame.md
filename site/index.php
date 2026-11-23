@@ -20,6 +20,8 @@ $routes = [
 // register routes
 \mc\router::init($routes);
 
+$canEditStudy = (\mc\user::has_capability("endgame::update") || \mc\user::has_role("admin")) ? "1" : "0";
+
 $fill = [
     "login-form" => \mc\user::login_form(),
     "user-menu" => \mc\user::user_menu(),
@@ -27,6 +29,7 @@ $fill = [
     "statistics" => statistics::block(),
     "www" => \config::www,
     "csrf-input" => \mc\user::csrf_field(),
+    "can-edit-study" => $canEditStudy,
 ];
 
 echo facade::template("index.template.php")->fill($fill)->value();

@@ -30,6 +30,6 @@ Replace the `float: left` fixed-height card layout with a responsive CSS Grid, r
    - Render pagination both above and below `#diag` (or below `#diag` with total count in `#stat`).
 
 ## Acceptance Criteria
-- [ ] Cards display in a responsive 1/2/3-column grid with aligned chessboards even when source titles wrap to 2 lines.
-- [ ] Clicking `Copy FEN` copies the FEN string to clipboard with visual feedback; clicking `PGN` downloads the file without opening a blank tab.
-- [ ] Pagination shows current page / total pages and is accessible at the bottom of the results list.
+- [x] Cards display in a responsive 1/2/3-column grid with aligned chessboards even when source titles wrap to 2 lines.
+- [x] Clicking `Copy FEN` copies the FEN string to clipboard with visual feedback; clicking `PGN` downloads the file without opening a blank tab.
+- [x] Pagination shows current page / total pages and is accessible at the bottom of the results list.

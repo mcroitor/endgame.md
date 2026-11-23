@@ -26,6 +26,6 @@ Polish secondary templates, add FEN diagram preview and stipulation dropdown to 
    - Ensure all `<label for="...">` attributes match input IDs, all icons have `alt` / `aria-label`, and interactive elements have visible `:focus-visible` outlines.
 
 ## Acceptance Criteria
-- [ ] Typing a valid FEN in `endgame-form.template.php` previews the chessboard diagram.
-- [ ] Footer statistics render without bullet points and with readable number formatting.
-- [ ] Keyboard navigation (`Tab`) shows clear focus rings across all forms, links, and buttons.
+- [x] Typing a valid FEN in `endgame-form.template.php` previews the chessboard diagram.
+- [x] Footer statistics render without bullet points and with readable number formatting.
+- [x] Keyboard navigation (`Tab`) shows clear focus rings across all forms, links, and buttons.

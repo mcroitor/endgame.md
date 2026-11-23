@@ -27,7 +27,7 @@ Make search filters discoverable and persistent, support `Enter` key submission,
    - Pass the `cook` filter parameter in `getPdf()` so exported PDFs match the on-screen query.
 
 ## Acceptance Criteria
-- [ ] Pressing `Enter` in any search input submits the query.
-- [ ] Advanced filters toggle via an explicit button with an active-filter counter and stay open after searching.
-- [ ] Reloading or sharing a URL with query parameters restores the filters and displays the matching results.
-- [ ] `getPdf()` includes the `cook` filter state.
+- [x] Pressing `Enter` in any search input submits the query.
+- [x] Advanced filters toggle via an explicit button with an active-filter counter and stay open after searching.
+- [x] Reloading or sharing a URL with query parameters restores the filters and displays the matching results.
+- [x] `getPdf()` includes the `cook` filter state.

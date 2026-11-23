@@ -25,6 +25,6 @@ Improve the `PGNLive!` modal UX (backdrop, `Escape` / outside-click close, large
    - When `result.stat === 0`, display `"No positions found. Try adjusting or clearing your filters."`.
 
 ## Acceptance Criteria
-- [ ] Opening `PGNLive!` dims the background and can be dismissed via `Escape`, clicking the backdrop, or clicking the enlarged close button.
-- [ ] Failed API requests in search or `PGNLive!` show a clear error message instead of leaving a stuck loading state.
-- [ ] Empty search results show a helpful empty-state message.
+- [x] Opening `PGNLive!` dims the background and can be dismissed via `Escape`, clicking the backdrop, or clicking the enlarged close button.
+- [x] Failed API requests in search or `PGNLive!` show a clear error message instead of leaving a stuck loading state.
+- [x] Empty search results show a helpful empty-state message.

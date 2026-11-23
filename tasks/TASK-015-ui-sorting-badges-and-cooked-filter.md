@@ -24,6 +24,6 @@ Add result sorting to the search API and UI, replace the single `cook` checkbox 
    - Parse/format stipulation codes (e.g., `tt22#016 {m}` → `Mate in 16` with raw code in `title` attribute) alongside `White wins` / `Draw`.
 
 ## Acceptance Criteria
-- [ ] Users can sort search results by year, author, or piece count without SQL errors.
-- [ ] The 3-state `cooked` selector clearly highlights the active choice and filters results accurately.
-- [ ] Study cards display side-to-move and readable stipulation badges.
+- [x] Users can sort search results by year, author, or piece count without SQL errors.
+- [x] The 3-state `cooked` selector clearly highlights the active choice and filters results accurately.
+- [x] Study cards display side-to-move and readable stipulation badges.

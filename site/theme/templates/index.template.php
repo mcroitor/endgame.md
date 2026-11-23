@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="app-base" content="<!-- www -->">
+    <meta name="can-edit-study" content="<!-- can-edit-study -->">
     <meta name="keywords" content="chess endgame study database, chess, база шахматных этюдов, шахматы" />
     <script type="text/javascript" src="<!-- www -->/scripts/studydb.js" defer></script>
     <script type="text/javascript" src="<!-- www -->/scripts/solve-mode.js" defer></script>
